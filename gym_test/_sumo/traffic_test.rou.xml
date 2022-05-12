@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2022-05-12 21:41:02 by Eclipse SUMO netedit Version 1.13.0
+-->
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+    <!-- Routes -->
+    <route id="route_east_to_north" edges="east_entry east_intersection_entry north_intersection_exit north_exit" color="0,0,0,0"/>
+    <route id="route_east_to_south" edges="east_entry east_intersection_entry south_intersection_exit south_exit" color="0,0,0,0"/>
+    <route id="route_east_to_west" edges="east_entry east_intersection_entry west_intersection_exit west_exit" color="0,0,0,0"/>
+    <route id="route_north_to_east" edges="north_entry north_intersection_entry east_intersection_exit east_exit" color="0,0,0,0"/>
+    <route id="route_north_to_south" edges="north_entry north_intersection_entry south_intersection_exit south_exit" color="0,0,0,0"/>
+    <route id="route_north_to_west" edges="north_entry north_intersection_entry west_intersection_exit west_exit" color="0,0,0,0"/>
+    <route id="route_south_to_east" edges="south_entry south_intersection_entry east_intersection_exit east_exit" color="0,0,0,0"/>
+    <route id="route_south_to_north" edges="south_entry south_intersection_entry north_intersection_exit north_exit" color="0,0,0,0"/>
+    <route id="route_south_to_west" edges="south_entry south_intersection_entry west_intersection_exit west_exit" color="0,0,0,0"/>
+    <route id="route_west_to_east" edges="west_entry west_intersection_entry east_intersection_exit east_exit" color="0,0,0,0"/>
+    <route id="route_west_to_north" edges="west_entry west_intersection_entry north_intersection_exit north_exit" color="0,0,0,0"/>
+    <route id="route_west_to_south" edges="west_entry west_intersection_entry south_intersection_exit south_exit" color="0,0,0,0"/>
+    <!-- Vehicles, persons and containers (sorted by depart) -->
+    <flow id="flow_east_to_north" begin="0.00" from="east_entry" to="north_exit" end="3600.00" vehsPerHour="1800.00"/>
+    <flow id="flow_east_to_south" begin="0.00" from="east_entry" to="south_exit" end="3600.00" vehsPerHour="1800.00"/>
+    <flow id="flow_east_to_west" begin="0.00" from="east_entry" to="west_exit" end="3600.00" vehsPerHour="1800.00"/>
+    <flow id="flow_north_to_east" begin="0.00" from="north_entry" to="east_exit" end="3600.00" vehsPerHour="1800.00"/>
+    <flow id="flow_north_to_south" begin="0.00" from="north_entry" to="south_exit" end="3600.00" vehsPerHour="1800.00"/>
+    <flow id="flow_north_to_west" begin="0.00" from="north_entry" to="west_exit" end="3600.00" vehsPerHour="1800.00"/>
+    <flow id="flow_south_to_east" begin="0.00" from="south_entry" to="east_exit" end="3600.00" vehsPerHour="1800.00"/>
+    <flow id="flow_south_to_north" begin="0.00" from="south_entry" to="north_exit" end="3600.00" vehsPerHour="1800.00"/>
+    <flow id="flow_south_to_west" begin="0.00" from="south_entry" to="west_exit" end="3600.00" vehsPerHour="1800.00"/>
+    <flow id="flow_west_to_east" begin="0.00" from="west_entry" to="east_exit" end="3600.00" vehsPerHour="1800.00"/>
+    <flow id="flow_west_to_north" begin="0.00" from="west_entry" to="north_exit" end="3600.00" vehsPerHour="1800.00"/>
+    <flow id="flow_west_to_south" begin="0.00" from="west_entry" to="south_exit" end="3600.00" vehsPerHour="1800.00"/>
+</routes>

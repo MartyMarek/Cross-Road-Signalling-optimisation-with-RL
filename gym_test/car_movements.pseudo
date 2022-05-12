@@ -1,0 +1,89 @@
+
+// Constants
+
+speed_limit_kmh = 60 [km/h]
+speed_limit_ms = speed_limit_kmh / 3.6 [m/s]
+zero_to_speed_limit = 5 [s]
+acceleration_rate = speed_limit_ms / zero_to_speed_limit [m/s^2]
+deceleration_rate = -acceleration_rate [m/s^2]
+safe_stopped_distance = 0.5 [m]
+safe_driving_distance = 2 [m]
+tracking_distance = 500 [m]
+intersection_width = 20 [m]
+
+// Traching
+
+vehicles = list()
+intersection = dict(
+    N: VehicleQueue(origin = N, heading = S, vehicles = None),
+    E: VehicleQueue(origin = E, heading = W, vehicles = None),
+    S: VehicleQueue(origin = S, heading = N, vehicles = None),
+    W: VehicleQueue(origin = W, heading = E, vehicles = None)
+)
+
+
+// Vehicle Class
+class Vehicle():
+
+    width = 1.5 [m]
+    length = 4 [m]
+    moving = {True, False}
+    speed_ms = 0 [m/s]
+    origin = {N, S, E, W}
+    heading = {N, S, E, W}
+    passed_intersection = {True, False}
+    x_coordinate = float
+    y_coordinate = float
+
+// Vehicle Queue Class
+class VehicleQueue():
+
+    origin = {N, S, E, W}
+    heading = {N, S, E, W}
+    vehicles = list(Vehicle)
+    length = sum(vehicles.length) + len(vehicles) * safe_stopped_distance
+    spawn_x_coordinate = 
+    spawn_y_coordinate = 
+
+// Signal Class
+class Signal():
+
+    origin = {N, S, E, W}
+    heading = {N, S, E, W}
+    state = {G, Y, R}
+
+// Spawn New Vehicle Function
+function SpawnVehicle(origin, heading)
+
+    queue = intersection[origin]
+
+    spawn_y_coordinate = -500 - intersection_width / 2
+
+    vehicles.append(
+        Vehicle(
+            moving = True,
+            speed_ms = speed_limit_ms,
+            origin = N,
+            heading = S,
+            passed_intersection = False,
+            x_coordinate = 0,
+            y_coordinate = -500 - intersection_width / 2
+        )
+    )
+
+
+
+
+MoveVehicle():
+
+    // Check if a vehicle is in front of the current vehicle
+    if 
+    if signal == green:
+
+    else if signal == yellow:
+
+    else if signal == red:
+
+
+Car approaches from N.
+Can it move?
