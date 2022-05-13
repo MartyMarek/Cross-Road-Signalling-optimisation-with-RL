@@ -27,7 +27,8 @@ traci.multientryexit.getLastStepVehicleIDs(detID='intersection_detector') # Get 
 traci.vehicle.getIDList()
 # Get vehicle count
 traci.vehicle.getIDCount()
-
+import numpy as np
+np.inf
 vehicle_ids = traci.vehicle.getIDList()
 
 vehicles_df = pd.DataFrame()
