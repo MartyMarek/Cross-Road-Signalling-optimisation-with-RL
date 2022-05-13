@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2022-05-13 22:46:20 by Eclipse SUMO netedit Version 1.13.0
+-->
+
+<additional xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/additional_file.xsd">
+    <!-- Detectors -->
+    <e3Detector id="intersection_detector" pos="-19.08,-12.94" freq="300.00" file="simplest_intersection_detector_summary.xml">
+        <detEntry lane="south_entry_0" pos="89.50"/>
+        <detEntry lane="south_entry_1" pos="89.50"/>
+        <detExit lane="north_exit_0" pos="0.00"/>
+        <detExit lane="north_exit_1" pos="0.00"/>
+        <detEntry lane="west_entry_0" pos="89.50"/>
+        <detEntry lane="west_entry_1" pos="89.50"/>
+        <detEntry lane="north_entry_1" pos="89.50"/>
+        <detEntry lane="north_entry_0" pos="89.50"/>
+        <detEntry lane="east_entry_1" pos="89.50"/>
+        <detEntry lane="east_entry_0" pos="89.50"/>
+        <detExit lane="west_exit_1" pos="0.00"/>
+        <detExit lane="west_exit_0" pos="0.00"/>
+        <detExit lane="east_exit_0" pos="0.00"/>
+        <detExit lane="east_exit_1" pos="0.00"/>
+        <detExit lane="south_exit_1" pos="0.00"/>
+        <detExit lane="south_exit_0" pos="0.00"/>
+    </e3Detector>
+</additional>

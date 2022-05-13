@@ -19,6 +19,10 @@ traci.start(sumoCmd) # Need to press play in the GUI after this
 traci.simulation.start()
 traci.simulationStep()
 
+traci.multientryexit.getIDList() # Get detector ID
+traci.simulationStep()
+traci.multientryexit.getLastStepVehicleIDs(detID='intersection_detector') # Get the vehicles currently in the intersection
+
 # Get all vehicles
 traci.vehicle.getIDList()
 # Get vehicle count
