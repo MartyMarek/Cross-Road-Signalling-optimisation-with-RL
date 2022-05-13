@@ -1,11 +1,8 @@
 import os, sys
+from IPython.display import display
 import pandas as pd
+import traci
 
-# if 'SUMO_HOME' in os.environ:
-#     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
-#     sys.path.append(tools)
-# else:
-#     sys.exit("please declare environment variable 'SUMO_HOME'")
 
 # Running Sumo
 sys.path.append(os.path.join('c:', os.sep, 'Program Files (x86)', 'Eclipse', 'Sumo','tools'))
@@ -14,65 +11,57 @@ sumoBinary = "C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo-gui"
 # File to run
 sumoCmd = [sumoBinary, "-c", "_sumo\\simplest_intersection.sumocfg"]
 
-import traci
+# used to set the display to automatic
+pd.options.display.width = 0
+
 traci.start(sumoCmd) # Need to press play in the GUI after this
-traci.simulation.start()
-traci.simulationStep()
-
-# Get all vehicles
-traci.vehicle.getIDList()
-# Get vehicle count
-traci.vehicle.getIDCount()
-
-vehicle_ids = traci.vehicle.getIDList()
 
 vehicles_df = pd.DataFrame()
 
-for vehicle_id in vehicle_ids:
-    
-    stopped_state = traci.vehicle.getStopState(vehID=vehicle_id) # I don't think stopped state means what we thought
-    waiting_time = traci.vehicle.getWaitingTime(vehID=vehicle_id)
-    accumulated_waiting_time = traci.vehicle.getAccumulatedWaitingTime(vehID=vehicle_id)
-    speed = traci.vehicle.getSpeed(vehID=vehicle_id)
+for _ in range(1000):
 
-    vehicle_df = pd.DataFrame(
-        data=
-        [[
-            vehicle_id,
-            waiting_time,
-            accumulated_waiting_time,
-            stopped_state,
-            speed
-        ]],
-        columns=
-        [
-            "vehicle_id",
-            "waiting_time",
-            "accumulated_waiting_time",
-            "stopped_state",
-            "speed"
-        ]
-    )
+    traci.simulationStep()
 
-    vehicles_df = pd.concat(
-        [
-            vehicles_df,
-            vehicle_df
-        ],
-        ignore_index=True
-    )
-    
+    # Get vehicle count
+    traci.vehicle.getIDCount()
 
-vehicles_df
+    vehicle_ids = traci.vehicle.getIDList()
 
-traci.simulationStep()
-step = 0
-print("A")
+    for vehicle_id in vehicle_ids:
 
+        stopped_state = traci.vehicle.getStopState(vehID=vehicle_id) # I don't think stopped state means what we thought
+        waiting_time = traci.vehicle.getWaitingTime(vehID=vehicle_id)
+        accumulated_waiting_time = traci.vehicle.getAccumulatedWaitingTime(vehID=vehicle_id)
+        speed = traci.vehicle.getSpeed(vehID=vehicle_id)
 
-while step < 1000:
-   traci.simulationStep()
-   
-   step += 1
+        newVehicle = pd.DataFrame(
+                        {
+                            'vehicle_id' : [vehicle_id],
+                            'waiting_time': [waiting_time],
+                            'accumulated_waiting_time': [accumulated_waiting_time],
+                            'stopped_state': [stopped_state],
+                            'speed': [speed]
+                        }
+        )
+
+        # if our list of vehicles is not empty
+        if not vehicles_df.empty:
+
+            # check if the vehicle already exists
+            index = vehicles_df.index
+            condition = vehicles_df['vehicle_id'] == vehicle_id
+            existingIndex = index[condition]
+            indexList = existingIndex.to_list()
+            #existingIndex = vehicles_df.index[vehicles_df['vehicle_id'] == vehicle_id].tolist()
+
+            if len(indexList) > 0:
+                vehicles_df.iloc[indexList[0]] = newVehicle.iloc[0]
+                continue
+
+        # if the dataframe is empty or does not contain the new vehicle id then insert the new vehicle
+        vehicles_df = pd.concat([vehicles_df, newVehicle], ignore_index=True)
+
+        display(vehicles_df)
+
 
 traci.close()
