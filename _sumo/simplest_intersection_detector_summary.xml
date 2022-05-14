@@ -14,3 +14,8 @@
     </traci_server>
 
 </configuration>
+-->
+
+<e3Detector xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/det_e3_file.xsd">
+   <interval begin="0.00" end="62.00" id="intersection_detector" meanTravelTime="1.80" meanOverlapTravelTime="2.16" meanSpeed="12.11" meanHaltsPerVehicle="0.00" meanTimeLoss="0.52" vehicleSum="51" meanSpeedWithin="13.95" meanHaltsPerVehicleWithin="0.00" meanDurationWithin="1.95" vehicleSumWithin="4" meanIntervalSpeedWithin="13.95" meanIntervalHaltsPerVehicleWithin="0.00" meanIntervalDurationWithin="1.95" meanTimeLossWithin="0.07"/>
+</e3Detector>
