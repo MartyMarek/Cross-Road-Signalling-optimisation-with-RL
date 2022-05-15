@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2022-05-13 22:47:30 by Eclipse SUMO GUI Version 1.13.0
+<!-- generated on 2022-05-15 22:14:49 by Eclipse SUMO GUI Version 1.13.0
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
 
     <input>
@@ -10,12 +10,23 @@
     </input>
 
     <traci_server>
-        <remote-port value="54463"/>
+        <remote-port value="59940"/>
     </traci_server>
 
 </configuration>
 -->
 
 <e3Detector xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/det_e3_file.xsd">
-   <interval begin="0.00" end="62.00" id="intersection_detector" meanTravelTime="1.80" meanOverlapTravelTime="2.16" meanSpeed="12.11" meanHaltsPerVehicle="0.00" meanTimeLoss="0.52" vehicleSum="51" meanSpeedWithin="13.95" meanHaltsPerVehicleWithin="0.00" meanDurationWithin="1.95" vehicleSumWithin="4" meanIntervalSpeedWithin="13.95" meanIntervalHaltsPerVehicleWithin="0.00" meanIntervalDurationWithin="1.95" meanTimeLossWithin="0.07"/>
+   <interval begin="0.00" end="300.00" id="intersection_detector" meanTravelTime="1.79" meanOverlapTravelTime="2.16" meanSpeed="12.09" meanHaltsPerVehicle="0.00" meanTimeLoss="0.53" vehicleSum="357" meanSpeedWithin="-1.00" meanHaltsPerVehicleWithin="-1.00" meanDurationWithin="-1.00" vehicleSumWithin="0" meanIntervalSpeedWithin="-1.00" meanIntervalHaltsPerVehicleWithin="-1.00" meanIntervalDurationWithin="-1.00" meanTimeLossWithin="-1.00"/>
+   <interval begin="300.00" end="600.00" id="intersection_detector" meanTravelTime="1.81" meanOverlapTravelTime="2.18" meanSpeed="12.01" meanHaltsPerVehicle="0.00" meanTimeLoss="0.55" vehicleSum="383" meanSpeedWithin="13.15" meanHaltsPerVehicleWithin="0.00" meanDurationWithin="1.88" vehicleSumWithin="4" meanIntervalSpeedWithin="13.15" meanIntervalHaltsPerVehicleWithin="0.00" meanIntervalDurationWithin="1.88" meanTimeLossWithin="0.03"/>
+   <interval begin="600.00" end="900.00" id="intersection_detector" meanTravelTime="1.79" meanOverlapTravelTime="2.17" meanSpeed="12.04" meanHaltsPerVehicle="0.00" meanTimeLoss="0.53" vehicleSum="385" meanSpeedWithin="-1.00" meanHaltsPerVehicleWithin="-1.00" meanDurationWithin="-1.00" vehicleSumWithin="0" meanIntervalSpeedWithin="-1.00" meanIntervalHaltsPerVehicleWithin="-1.00" meanIntervalDurationWithin="-1.00" meanTimeLossWithin="-1.00"/>
+   <interval begin="900.00" end="1200.00" id="intersection_detector" meanTravelTime="1.81" meanOverlapTravelTime="2.19" meanSpeed="11.85" meanHaltsPerVehicle="0.00" meanTimeLoss="0.54" vehicleSum="400" meanSpeedWithin="17.25" meanHaltsPerVehicleWithin="0.00" meanDurationWithin="1.79" vehicleSumWithin="1" meanIntervalSpeedWithin="17.25" meanIntervalHaltsPerVehicleWithin="0.00" meanIntervalDurationWithin="1.79" meanTimeLossWithin="0.00"/>
+   <interval begin="1200.00" end="1500.00" id="intersection_detector" meanTravelTime="1.82" meanOverlapTravelTime="2.19" meanSpeed="11.89" meanHaltsPerVehicle="0.00" meanTimeLoss="0.55" vehicleSum="384" meanSpeedWithin="12.56" meanHaltsPerVehicleWithin="0.00" meanDurationWithin="1.66" vehicleSumWithin="4" meanIntervalSpeedWithin="12.56" meanIntervalHaltsPerVehicleWithin="0.00" meanIntervalDurationWithin="1.66" meanTimeLossWithin="0.00"/>
+   <interval begin="1500.00" end="1800.00" id="intersection_detector" meanTravelTime="1.78" meanOverlapTravelTime="2.16" meanSpeed="12.13" meanHaltsPerVehicle="0.00" meanTimeLoss="0.51" vehicleSum="386" meanSpeedWithin="-1.00" meanHaltsPerVehicleWithin="-1.00" meanDurationWithin="-1.00" vehicleSumWithin="0" meanIntervalSpeedWithin="-1.00" meanIntervalHaltsPerVehicleWithin="-1.00" meanIntervalDurationWithin="-1.00" meanTimeLossWithin="-1.00"/>
+   <interval begin="1800.00" end="2100.00" id="intersection_detector" meanTravelTime="1.79" meanOverlapTravelTime="2.16" meanSpeed="12.09" meanHaltsPerVehicle="0.00" meanTimeLoss="0.54" vehicleSum="399" meanSpeedWithin="13.05" meanHaltsPerVehicleWithin="0.00" meanDurationWithin="1.78" vehicleSumWithin="1" meanIntervalSpeedWithin="13.05" meanIntervalHaltsPerVehicleWithin="0.00" meanIntervalDurationWithin="1.78" meanTimeLossWithin="0.00"/>
+   <interval begin="2100.00" end="2400.00" id="intersection_detector" meanTravelTime="1.85" meanOverlapTravelTime="2.23" meanSpeed="11.67" meanHaltsPerVehicle="0.00" meanTimeLoss="0.57" vehicleSum="382" meanSpeedWithin="13.22" meanHaltsPerVehicleWithin="0.00" meanDurationWithin="2.06" vehicleSumWithin="4" meanIntervalSpeedWithin="13.22" meanIntervalHaltsPerVehicleWithin="0.00" meanIntervalDurationWithin="2.06" meanTimeLossWithin="0.04"/>
+   <interval begin="2400.00" end="2700.00" id="intersection_detector" meanTravelTime="1.78" meanOverlapTravelTime="2.15" meanSpeed="12.10" meanHaltsPerVehicle="0.00" meanTimeLoss="0.50" vehicleSum="386" meanSpeedWithin="-1.00" meanHaltsPerVehicleWithin="-1.00" meanDurationWithin="-1.00" vehicleSumWithin="0" meanIntervalSpeedWithin="-1.00" meanIntervalHaltsPerVehicleWithin="-1.00" meanIntervalDurationWithin="-1.00" meanTimeLossWithin="-1.00"/>
+   <interval begin="2700.00" end="3000.00" id="intersection_detector" meanTravelTime="1.81" meanOverlapTravelTime="2.18" meanSpeed="11.94" meanHaltsPerVehicle="0.00" meanTimeLoss="0.54" vehicleSum="400" meanSpeedWithin="14.00" meanHaltsPerVehicleWithin="0.00" meanDurationWithin="2.82" vehicleSumWithin="1" meanIntervalSpeedWithin="14.00" meanIntervalHaltsPerVehicleWithin="0.00" meanIntervalDurationWithin="2.82" meanTimeLossWithin="0.04"/>
+   <interval begin="3000.00" end="3300.00" id="intersection_detector" meanTravelTime="1.82" meanOverlapTravelTime="2.19" meanSpeed="11.94" meanHaltsPerVehicle="0.00" meanTimeLoss="0.54" vehicleSum="384" meanSpeedWithin="12.24" meanHaltsPerVehicleWithin="0.00" meanDurationWithin="1.77" vehicleSumWithin="4" meanIntervalSpeedWithin="12.24" meanIntervalHaltsPerVehicleWithin="0.00" meanIntervalDurationWithin="1.77" meanTimeLossWithin="0.06"/>
+   <interval begin="3300.00" end="3600.00" id="intersection_detector" meanTravelTime="1.78" meanOverlapTravelTime="2.15" meanSpeed="12.13" meanHaltsPerVehicle="0.00" meanTimeLoss="0.51" vehicleSum="383" meanSpeedWithin="-1.00" meanHaltsPerVehicleWithin="-1.00" meanDurationWithin="-1.00" vehicleSumWithin="0" meanIntervalSpeedWithin="-1.00" meanIntervalHaltsPerVehicleWithin="-1.00" meanIntervalDurationWithin="-1.00" meanTimeLossWithin="-1.00"/>
 </e3Detector>

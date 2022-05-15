@@ -5,8 +5,9 @@ import pandas as pd
 import numpy as np
 from enum import Enum
 import random
-
+import os, sys
 from torch import sign
+import traci
 
 class TrafficLightStates(Enum):
   GrGr = 0 # N/S Green, E/W Red
@@ -23,7 +24,7 @@ class SimplestIntersection(gym.Env):
     # Define constants for clearer code
 
 
-    def __init__(self):
+    def __init__(self,sumo_binary_path,sumo_config_path,max_simulation_seconds):
 
         super(SimplestIntersection, self).__init__()
 
@@ -52,7 +53,16 @@ class SimplestIntersection(gym.Env):
             "signals": Discrete(len(TrafficLightStates))
         })
         
+
+        # SUMO Setup
+        self._sumo_binary = sumo_binary_path
+        self._sumo_config = sumo_config_path
+        self._sumo_command = [self._sumo_binary, "-c", self._sumo_config]
+        self._max_simulation_seconds = max_simulation_seconds
+
+        # Reset counters
         self._current_time_step = 0
+        self._current_simulation_time = 0
         self._previous_signal = None
         self._total_signal_changes = 0
         self._total_throughput = 0
@@ -67,8 +77,19 @@ class SimplestIntersection(gym.Env):
         Must return the first observation.
         """
 
+        # Reset SUMO
+        # Close any existing session
+        try:
+            traci.close()
+        except traci.exceptions.FatalTraCIError:
+            print("No simulation running.")
+        
+        # Start new session
+        traci.start(self._sumo_command) # Need to press play in the GUI after this if in GUI mode
+
         # Reset counters
         self._current_time_step = 0
+        self._current_simulation_time = traci.simulation.getTime()
         self._previous_signal = None
         self._total_signal_changes = 0
         self._total_throughput = 0
@@ -88,6 +109,12 @@ class SimplestIntersection(gym.Env):
         return observations
 
     def step(self, action):
+        
+        # Step SUMO
+        traci.simulationStep()
+        # Increment the time step
+        self._current_time_step += 1
+        self._current_simulation_time = traci.simulation.getTime()
 
         # Get cars waiting in N/S direction
         cars_waiting_ns = random.randint(0,5)
@@ -108,9 +135,10 @@ class SimplestIntersection(gym.Env):
             "signals": signal_state
         }
 
-        # End after 100 time steps
-        if self._current_time_step >= 100:
+        # End after the maximum simulation time steps
+        if self._current_simulation_time >= self._max_simulation_seconds:
             done = True
+            traci.close()
         else:
             done = False
 
@@ -123,12 +151,9 @@ class SimplestIntersection(gym.Env):
         reward = throughput_reward - waiting_punishment
 
         # Optionally we can pass additional info, we are not using that for now
-        info = {}
+        info = {"simulation_time":self._current_simulation_time}
 
         ## Update values
-        # Increment the time step
-        self._current_time_step += 1
-
         # Update total signal changes
         if TrafficLightStates(action).name != self._previous_signal:
             self._total_signal_changes += 1
@@ -172,10 +197,19 @@ class SimplestIntersection(gym.Env):
         #print("." * (self.grid_size - self.agent_pos))
 
     def close(self):
-        pass
+        # Close any existing session
+        try:
+            traci.close()
+        except traci.exceptions.FatalTraCIError:
+            print("No simulation running.")
 
 # Define environment
-env = SimplestIntersection()
+env = SimplestIntersection(
+    sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo",
+    #sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo-gui",
+    sumo_config_path="_sumo\\simplest_intersection.sumocfg",
+    max_simulation_seconds=3600
+)
 # If the environment don't follow the interface, an error will be thrown
 check_env(env, warn=True)
 
@@ -190,7 +224,7 @@ while not done:
   print("Step {}".format(step))
   print("Action: ", TrafficLightStates(action).name)
   obs, reward, done, info = env.step(action)
-  print('obs=', obs, 'reward=', reward, 'done=', done)
+  print('obs=', obs, 'reward=', reward, 'done=', done, "info=", info)
   env.render(mode='console')
   if done:
     # Note that the VecEnv resets automatically

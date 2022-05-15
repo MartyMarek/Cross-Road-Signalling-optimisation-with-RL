@@ -9,7 +9,8 @@ import pandas as pd
 
 # Running Sumo
 sys.path.append(os.path.join('c:', os.sep, 'Program Files (x86)', 'Eclipse', 'Sumo','tools'))
-sumoBinary = "C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo-gui"
+#sumoBinary = "C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo-gui"
+sumoBinary = "C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo"
 
 # File to run
 sumoCmd = [sumoBinary, "-c", "_sumo\\simplest_intersection.sumocfg"]
@@ -18,10 +19,17 @@ import traci
 traci.start(sumoCmd) # Need to press play in the GUI after this
 traci.simulation.start()
 traci.simulationStep()
-
+traci.simulation.getEndTime()
+traci.simulation.getTime()
 traci.multientryexit.getIDList() # Get detector ID
 traci.simulationStep()
 traci.multientryexit.getLastStepVehicleIDs(detID='intersection_detector') # Get the vehicles currently in the intersection
+traci.simulation.getArrivedIDList()
+traci
+for i in range(0,100000):
+    traci.simulationStep()
+    traci.multientryexit.getLastStepVehicleIDs(detID='intersection_detector') 
+
 
 # Get all vehicles
 traci.vehicle.getIDList()
@@ -80,4 +88,8 @@ while step < 1000:
    
    step += 1
 
+
+traci.simulation.isLoaded()
+
 traci.close()
+
