@@ -2,6 +2,7 @@ import os, sys
 from IPython.display import display
 import pandas as pd
 import traci
+import categorise as c
 
 
 # Running Sumo
@@ -16,16 +17,29 @@ pd.options.display.width = 0
 
 traci.start(sumoCmd) # Need to press play in the GUI after this
 
-vehicles_df = pd.DataFrame()
+categoriser = c.Category()
 
 for _ in range(1000):
 
     traci.simulationStep()
 
+    vehicles_df = pd.DataFrame()
+    horizontal = pd.DataFrame()
+    vertical = pd.DataFrame()
+
     # Get vehicle count
     traci.vehicle.getIDCount()
 
-    vehicle_ids = traci.vehicle.getIDList()
+    vehicle_ids = list(traci.vehicle.getIDList())
+    arrivedVehicles = list(traci.simulation.getArrivedIDList())
+
+    # remove the arrived vehicles
+    for arrived in arrivedVehicles:
+        if arrived in vehicle_ids:
+            vehicle_ids.remove(arrived)
+
+    # get the vehicle id's that have moved beyond the detector range and remove them from the list
+    #print(traci.inductionloop.getVehicleData()) #what is the loop id?
 
     for vehicle_id in vehicle_ids:
 
@@ -33,6 +47,7 @@ for _ in range(1000):
         waiting_time = traci.vehicle.getWaitingTime(vehID=vehicle_id)
         accumulated_waiting_time = traci.vehicle.getAccumulatedWaitingTime(vehID=vehicle_id)
         speed = traci.vehicle.getSpeed(vehID=vehicle_id)
+
 
         newVehicle = pd.DataFrame(
                         {
@@ -61,7 +76,10 @@ for _ in range(1000):
         # if the dataframe is empty or does not contain the new vehicle id then insert the new vehicle
         vehicles_df = pd.concat([vehicles_df, newVehicle], ignore_index=True)
 
-        display(vehicles_df)
+    #display(vehicles_df)
+    horizontal, vertical = categoriser.categorise(vehicles_df)
+
+    #display(horizontal)
 
 
 traci.close()

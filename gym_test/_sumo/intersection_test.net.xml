@@ -4,7 +4,7 @@
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/netconvertConfiguration.xsd">
 
     <input>
-        <sumo-net-file value="C:\Users\marto\PycharmProjects\gym_testcross\_sumo\intersection_test.net.xml"/>
+        <sumo-net-file value="C:\Users\marto\PycharmProjects\gym_testcross\_sumo\intersection_old.net.xml"/>
     </input>
 
     <output>
@@ -30,7 +30,7 @@
     </pedestrian>
 
     <netedit>
-        <route-files value="C:\Users\marto\PycharmProjects\gym_testcross\_sumo\traffic_test.rou.xml"/>
+        <route-files value="C:\Users\marto\PycharmProjects\gym_testcross\_sumo\_sumo\traffic_test.rou.xml"/>
     </netedit>
 
     <report>
