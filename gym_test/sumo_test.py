@@ -39,7 +39,11 @@ for _ in range(1000):
             vehicle_ids.remove(arrived)
 
     # get the vehicle id's that have moved beyond the detector range and remove them from the list
-    #print(traci.inductionloop.getVehicleData()) #what is the loop id?
+    for detected in traci.multientryexit.getLastStepVehicleIDs('intersection_detector'):
+        if detected in vehicle_ids:
+            vehicle_ids.remove(detected)
+
+
 
     for vehicle_id in vehicle_ids:
 
@@ -76,10 +80,10 @@ for _ in range(1000):
         # if the dataframe is empty or does not contain the new vehicle id then insert the new vehicle
         vehicles_df = pd.concat([vehicles_df, newVehicle], ignore_index=True)
 
-    #display(vehicles_df)
-    horizontal, vertical = categoriser.categorise(vehicles_df)
+    # get the vehicle state space
+    horizontal, vertical, hTime, vTime = categoriser.categorise(vehicles_df)
 
-    #display(horizontal)
+    display(horizontal)
 
 
 traci.close()
