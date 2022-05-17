@@ -6,12 +6,13 @@ import categorise as c
 
 class StateSpace:
 
-    def __init__(self):
+    def __init__(self, sumo):
 
         self.categoriser = c.Category()
         # Running Sumo
         sys.path.append(os.path.join('c:', os.sep, 'Program Files (x86)', 'Eclipse', 'Sumo', 'tools'))
-        self.sumoBinary = "C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo-gui"
+        #self.sumoBinary = "C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo-gui"
+        self.sumoBinary = sumo
 
         # File to run
         self.sumoCmd = [self.sumoBinary, "-c", "_sumo\\simplest_intersection.sumocfg"]

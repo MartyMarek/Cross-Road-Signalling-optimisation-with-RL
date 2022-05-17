@@ -3,7 +3,10 @@ from IPython.display import display
 import pandas as pd
 import traci
 import categorise as c
+import statespace as state
 
+
+stateSpace = state.StateSpace("C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo-gui")
 
 # Running Sumo
 sys.path.append(os.path.join('c:', os.sep, 'Program Files (x86)', 'Eclipse', 'Sumo','tools'))

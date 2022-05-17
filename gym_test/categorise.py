@@ -19,8 +19,8 @@ class Category:
         vertical = len(verticalList.index)
 
         # get the total wait time for all vehicles
-        hTotalTime = horizontal['accumulated_waiting_time'].sum()
-        vTotalTime = vertical['accumulated_waiting_time'].sum()
+        hTotalTime = horizontalList['accumulated_waiting_time'].sum()
+        vTotalTime = verticalList['accumulated_waiting_time'].sum()
 
         return horizontal, vertical, hTotalTime, vTotalTime
 
