@@ -22,3 +22,23 @@ class Category:
         return horizontal, vertical, hTotalTime, vTotalTime
 
 
+    def convertLightStateToInt(self, lightState):
+        if lightState == 'GGrrGGrr':
+            return 0
+        if lightState == 'yyrryyrr':
+            return 1
+        if lightState == 'rrGGrrGG':
+            return 2
+        if lightState == 'rryyrryy':
+            return 3
+
+
+    def convertLightStateToString(self, lightState):
+        if lightState == 0:
+            return 'GGrrGGrr'
+        if lightState == 1:
+            return 'yyrryyrr'
+        if lightState == 2:
+            return 'rrGGrrGG'
+        if lightState == 3:
+            return 'rryyrryy'

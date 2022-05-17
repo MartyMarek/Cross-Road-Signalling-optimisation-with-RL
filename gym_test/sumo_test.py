@@ -83,7 +83,14 @@ for _ in range(1000):
     # get the vehicle state space
     horizontal, vertical, hTime, vTime = categoriser.categorise(vehicles_df)
 
-    display(horizontal)
+    # get the traffic light state space
+    idList = traci.trafficlight.getIDList()
+    trafficLightCount = traci.trafficlight.getIDCount()
+    lightStateString = traci.trafficlight.getRedYellowGreenState('intersection')
+
+    lightState = categoriser.convertLightStateToInt(lightStateString)
+
+    #display(lightState)
 
 
 traci.close()
