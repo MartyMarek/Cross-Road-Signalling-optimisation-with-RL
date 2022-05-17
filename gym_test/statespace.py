@@ -82,7 +82,8 @@ class StateSpace:
                 # if the dataframe is empty or does not contain the new vehicle id then insert the new vehicle
                 vehicles_df = pd.concat([vehicles_df, newVehicle], ignore_index=True)
 
-            # get the vehicle state space
+            # get the vehicle state space (number of cars waiting horizontally and vertically,
+            # and the total accumulated wait time )
             horizontal, vertical, hTime, vTime = self.categoriser.categorise(vehicles_df)
 
             # get the traffic light state space

@@ -12,8 +12,11 @@ class Category:
     def categorise(self, data):
 
         # get vehicles travelling horizontally and vertically
-        horizontal = data[data['vehicle_id'].str.contains('south|north')]
-        vertical = data[data['vehicle_id'].str.contains('east|west')]
+        horizontalList = data[data['vehicle_id'].str.contains('south|north')]
+        verticalList = data[data['vehicle_id'].str.contains('east|west')]
+
+        horizontal = len(horizontalList.index)
+        vertical = len(verticalList.index)
 
         # get the total wait time for all vehicles
         hTotalTime = horizontal['accumulated_waiting_time'].sum()
