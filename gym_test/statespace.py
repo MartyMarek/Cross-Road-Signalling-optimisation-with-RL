@@ -17,6 +17,9 @@ class StateSpace:
         # File to run
         self.sumoCmd = [self.sumoBinary, "-c", "_sumo\\simplest_intersection.sumocfg"]
 
+        # stores the vehicle id's that have moved past the intersection
+        self.vehiclesPast = set()
+
 
     def beginSimulation(self):
         traci.start(self.sumoCmd)  # Need to press play in the GUI after this
@@ -27,71 +30,82 @@ class StateSpace:
 
     def getCurrentStateSpace(self):
 
-        for _ in range(1000):
+        # take the next simulation step (beginSimulation method must be called first)
+        traci.simulationStep()
 
-            # take the next simulation step (beginSimulation method must be called first)
-            traci.simulationStep()
+        # stores the vehicles in this step of the simulation
+        vehicles_df = pd.DataFrame()
 
-            # stores the vehicles in this step of the simulation
-            vehicles_df = pd.DataFrame()
+        # get all vehicle id's in teh simulation and the vehicles that have left the simulation
+        vehicle_ids = list(traci.vehicle.getIDList())
+        arrivedVehicles = list(traci.simulation.getArrivedIDList())
 
-            # get all vehicle id's in teh simulation and the vehicles that have left the simulation
-            vehicle_ids = list(traci.vehicle.getIDList())
-            arrivedVehicles = list(traci.simulation.getArrivedIDList())
+        # remove the arrived vehicles
+        #for arrived in arrivedVehicles:
+        #    if arrived in vehicle_ids:
+        #        vehicle_ids.remove(arrived)
 
-            # remove the arrived vehicles
-            for arrived in arrivedVehicles:
-                if arrived in vehicle_ids:
-                    vehicle_ids.remove(arrived)
+        # get the vehicle id's that have moved beyond the detector range and remove them from the list
+        #for detected in traci.multientryexit.getLastStepVehicleIDs('intersection_detector'):
+        #    if detected in vehicle_ids:
+        #        vehicle_ids.remove(detected)
 
-            # get the vehicle id's that have moved beyond the detector range and remove them from the list
-            for detected in traci.multientryexit.getLastStepVehicleIDs('intersection_detector'):
-                if detected in vehicle_ids:
-                    vehicle_ids.remove(detected)
+        # get any vehicle that have past the intersection on this turn
+        for pastVehicle in traci.multientryexit.getLastStepVehicleIDs('intersection_detector'):
+            self.vehiclesPast.add(pastVehicle)
 
-            for vehicle_id in vehicle_ids:
+        # now remove the cars that have past the intersection from the list of vehicle id's we are tracking
+        for pastVehicle in self.vehiclesPast:
+            if pastVehicle in vehicle_ids:
+                vehicle_ids.remove(pastVehicle)
 
-                stopped_state = traci.vehicle.getStopState(vehID=vehicle_id)
-                waiting_time = traci.vehicle.getWaitingTime(vehID=vehicle_id)
-                accumulated_waiting_time = traci.vehicle.getAccumulatedWaitingTime(vehID=vehicle_id)
-                speed = traci.vehicle.getSpeed(vehID=vehicle_id)
 
-                newVehicle = pd.DataFrame(
-                    {
-                        'vehicle_id': [vehicle_id],
-                        'waiting_time': [waiting_time],
-                        'accumulated_waiting_time': [accumulated_waiting_time],
-                        'stopped_state': [stopped_state],
-                        'speed': [speed]
-                    }
-                )
+        for vehicle_id in vehicle_ids:
 
-                # if our list of vehicles is not empty
-                if not vehicles_df.empty:
+            stopped_state = traci.vehicle.getStopState(vehID=vehicle_id)
+            waiting_time = traci.vehicle.getWaitingTime(vehID=vehicle_id)
+            accumulated_waiting_time = traci.vehicle.getAccumulatedWaitingTime(vehID=vehicle_id)
+            speed = traci.vehicle.getSpeed(vehID=vehicle_id)
 
-                    # check if the vehicle already exists
-                    index = vehicles_df.index
-                    condition = vehicles_df['vehicle_id'] == vehicle_id
-                    existingIndex = index[condition]
-                    indexList = existingIndex.to_list()
-                    # existingIndex = vehicles_df.index[vehicles_df['vehicle_id'] == vehicle_id].tolist()
+            newVehicle = pd.DataFrame(
+                {
+                    'vehicle_id': [vehicle_id],
+                    'waiting_time': [waiting_time],
+                    'accumulated_waiting_time': [accumulated_waiting_time],
+                    'stopped_state': [stopped_state],
+                    'speed': [speed]
+                }
+            )
 
-                    if len(indexList) > 0:
-                        vehicles_df.iloc[indexList[0]] = newVehicle.iloc[0]
-                        continue
+            # if our list of vehicles is not empty
+            if not vehicles_df.empty:
 
-                # if the dataframe is empty or does not contain the new vehicle id then insert the new vehicle
-                vehicles_df = pd.concat([vehicles_df, newVehicle], ignore_index=True)
+                # check if the vehicle already exists
+                index = vehicles_df.index
+                condition = vehicles_df['vehicle_id'] == vehicle_id
+                existingIndex = index[condition]
+                indexList = existingIndex.to_list()
+                # existingIndex = vehicles_df.index[vehicles_df['vehicle_id'] == vehicle_id].tolist()
 
-            # get the vehicle state space (number of cars waiting horizontally and vertically,
-            # and the total accumulated wait time )
-            horizontal, vertical, hTime, vTime = self.categoriser.categorise(vehicles_df)
+                if len(indexList) > 0:
+                    vehicles_df.iloc[indexList[0]] = newVehicle.iloc[0]
+                    continue
 
-            # get the traffic light state space
-            lightStateString = traci.trafficlight.getRedYellowGreenState('intersection')
+            # if the dataframe is empty or does not contain the new vehicle id then insert the new vehicle
+            vehicles_df = pd.concat([vehicles_df, newVehicle], ignore_index=True)
 
-            lightState = self.categoriser.convertLightStateToInt(lightStateString)
+        # get the vehicle state space (number of cars waiting horizontally and vertically,
+        # and the total accumulated wait time )
+        horizontal, vertical, hTime, vTime = self.categoriser.categorise(vehicles_df)
 
-            return horizontal, vertical, hTime, vTime, lightState
+        # get the traffic light state space
+        lightStateString = traci.trafficlight.getRedYellowGreenState('intersection')
+
+        lightState = self.categoriser.convertLightStateToInt(lightStateString)
+
+        # throughput - this can be either the total vehicle past so far or the total / the simulation step
+        throughput = len(self.vehiclesPast)
+
+        return horizontal, vertical, hTime, vTime, lightState, throughput
 
 
