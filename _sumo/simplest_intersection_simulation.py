@@ -22,6 +22,7 @@ class SumoSimulation:
 
         # stores the vehicle id's that have moved past the intersection
         self.vehiclesPast = set()
+        self.vehiclesPastHistory = set()
 
     def categorise(self, data):
 
@@ -65,22 +66,17 @@ class SumoSimulation:
         vehicle_ids = list(traci.vehicle.getIDList())
         arrivedVehicles = list(traci.simulation.getArrivedIDList())
 
-        # remove the arrived vehicles
-        #for arrived in arrivedVehicles:
-        #    if arrived in vehicle_ids:
-        #        vehicle_ids.remove(arrived)
-
-        # get the vehicle id's that have moved beyond the detector range and remove them from the list
-        #for detected in traci.multientryexit.getLastStepVehicleIDs('intersection_detector'):
-        #    if detected in vehicle_ids:
-        #        vehicle_ids.remove(detected)
 
         # get any vehicle that have past the intersection on this turn
         for pastVehicle in traci.multientryexit.getLastStepVehicleIDs('intersection_detector'):
+            # this set is only used to store vehicles that have passed the interection this step
             self.vehiclesPast.add(pastVehicle)
 
+            # this set keeps all vehicles past so we can delete them from the overall list
+            self.vehiclesPastHistory(pastVehicle)
+
         # now remove the cars that have past the intersection from the list of vehicle id's we are tracking
-        for pastVehicle in self.vehiclesPast:
+        for pastVehicle in self.vehiclesPastHistory:
             if pastVehicle in vehicle_ids:
                 vehicle_ids.remove(pastVehicle)
 
