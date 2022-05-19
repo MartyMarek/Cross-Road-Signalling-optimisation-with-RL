@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2022-05-15 22:14:49 by Eclipse SUMO GUI Version 1.13.0
+<!-- generated on 2022-05-19 14:37:14 by Eclipse SUMO sumo Version 1.13.0
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
 
     <input>
-        <net-file value="_sumo\../../../../COSC2793%20-%20Computational%20Machine%20Learning/Assignment02/CML-Assign2/_sumo/simplest_intersection.net.xml"/>
-        <route-files value="_sumo\../../../../COSC2793%20-%20Computational%20Machine%20Learning/Assignment02/CML-Assign2/_sumo/simplest_intersection_traffic.rou.xml"/>
-        <additional-files value="_sumo\../../../../COSC2793%20-%20Computational%20Machine%20Learning/Assignment02/CML-Assign2/_sumo/simplest_intersection_detectors.xml"/>
+        <net-file value="_sumo\_config\../../../../../COSC2793%20-%20Computational%20Machine%20Learning/Assignment02/CML-Assign2/_sumo/_config/simplest_intersection.net.xml"/>
+        <route-files value="_sumo\_config\../../../../../COSC2793%20-%20Computational%20Machine%20Learning/Assignment02/CML-Assign2/_sumo/_config/simplest_intersection_traffic.rou.xml"/>
+        <additional-files value="_sumo\_config\../../../../../COSC2793%20-%20Computational%20Machine%20Learning/Assignment02/CML-Assign2/_sumo/_config/simplest_intersection_detectors.xml"/>
     </input>
 
     <traci_server>
-        <remote-port value="59940"/>
+        <remote-port value="51706"/>
     </traci_server>
 
 </configuration>

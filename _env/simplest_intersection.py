@@ -1,17 +1,11 @@
 import gym
 from gym.spaces import Discrete, Box, Dict
-from stable_baselines3.common.env_checker import check_env
 import pandas as pd
 import numpy as np
 from enum import Enum
 import random
-import os, sys
-from torch import sign
 import traci
-
-class TrafficLightStates(Enum):
-  GrGr = 0 # N/S Green, E/W Red
-  rGrG = 1 # N/S Red, E/W Green
+from _sumo.simplest_intersection_simulation import SumoSimulation
 
 class SimplestIntersection(gym.Env):
     """
@@ -24,9 +18,13 @@ class SimplestIntersection(gym.Env):
     # Define constants for clearer code
 
 
-    def __init__(self,sumo_binary_path,sumo_config_path,max_simulation_seconds):
+    def __init__(self,simulation: SumoSimulation,max_simulation_seconds):
 
         super(SimplestIntersection, self).__init__()
+
+        # SUMO Setup
+        self._simulation = simulation
+        self._max_simulation_seconds = max_simulation_seconds
 
         # Spaces
         ## Define action space
@@ -34,7 +32,7 @@ class SimplestIntersection(gym.Env):
         Discrete actions corresponding to each possible traffic light state for the intersection
         '''
         
-        self.action_space = Discrete(len(TrafficLightStates))
+        self.action_space = Discrete(len(self._simulation._signal_states))
 
         ## Observation space
         '''
@@ -50,18 +48,11 @@ class SimplestIntersection(gym.Env):
         '''
         self.observation_space = Dict({
             "traffic": Box(low=0, high=10000, shape=(5,), dtype=np.int64),
-            "signals": Discrete(len(TrafficLightStates))
+            "signals": Discrete(len(self._simulation._signal_states))
         })
         
-
-        # SUMO Setup
-        self._sumo_binary = sumo_binary_path
-        self._sumo_config = sumo_config_path
-        self._sumo_command = [self._sumo_binary, "-c", self._sumo_config]
-        self._max_simulation_seconds = max_simulation_seconds
-
         # Reset counters
-        self._current_time_step = 0
+        self._current_time_step = 1
         self._current_simulation_time = 0
         self._previous_signal = None
         self._total_signal_changes = 0
@@ -78,18 +69,16 @@ class SimplestIntersection(gym.Env):
         """
 
         # Reset SUMO
-        # Close any existing session
-        try:
-            traci.close()
-        except traci.exceptions.FatalTraCIError:
-            print("No simulation running.")
+        ## Close any existing session
+        self._simulation.endSimulation()
         
-        # Start new session
-        traci.start(self._sumo_command) # Need to press play in the GUI after this if in GUI mode
+        ## Start new session
+        self._simulation.beginSimulation()
+        self._simulation.stepSimulation()
 
         # Reset counters
-        self._current_time_step = 0
-        self._current_simulation_time = traci.simulation.getTime()
+        self._current_time_step = 1
+        self._current_simulation_time = self._simulation.getSimulationTime()
         self._previous_signal = None
         self._total_signal_changes = 0
         self._total_throughput = 0
@@ -101,46 +90,45 @@ class SimplestIntersection(gym.Env):
         # Return the first observation
         # Signal state needs to be read from the simulation, but do this for now.
         
-        observations = {
-            "traffic": np.array([0]*5, dtype='int64'),
-            "signals": 0
-        }
+        # observations = {
+        #     "traffic": np.array([0]*5, dtype='int64'),
+        #     "signals": 0
+        # }
+        
+        observations = self._simulation.getCurrentObservations()
 
         return observations
 
     def step(self, action):
         
         # Step SUMO
-        traci.simulationStep()
+        self._simulation.stepSimulation()
+
         # Increment the time step
         self._current_time_step += 1
-        self._current_simulation_time = traci.simulation.getTime()
+        self._current_simulation_time = self._simulation.getSimulationTime()
+
+        # # New obs
+        # observations = {
+        #     "traffic": np.array([cars_waiting_ns,cars_waiting_ew,time_waiting_ns,time_waiting_ew,throughput], dtype='int64'),
+        #     "signals": signal_state
+        # }
+
+        observations = self._simulation.getCurrentObservations()
 
         # Get cars waiting in N/S direction
-        cars_waiting_ns = random.randint(0,5)
+        # Get cars approaching in N/S direction
+        cars_waiting_ns = observations['traffic'][0]
         # Get cars waiting in E/W direction
-        cars_waiting_ew = random.randint(0,5)
+        cars_waiting_ew = observations['traffic'][1]
         # Get sum of accumulated wait time for all cars waiting in N/S direction
-        time_waiting_ns = random.randint(0,5)
+        time_waiting_ns = observations['traffic'][2]
         # Get sum of accumulated wait time for all cars waiting in E/W direction
-        time_waiting_ew = random.randint(0,5)
+        time_waiting_ew = observations['traffic'][3]
         # Get cars that have entered/passed the intersection (throughput)
-        throughput = random.randint(0,5)
+        throughput = observations['traffic'][4]
         # Get traffic light state
-        signal_state = random.randint(0,len(TrafficLightStates)-1)
-
-        # New obs
-        observations = {
-            "traffic": np.array([cars_waiting_ns,cars_waiting_ew,time_waiting_ns,time_waiting_ew,throughput], dtype='int64'),
-            "signals": signal_state
-        }
-
-        # End after the maximum simulation time steps
-        if self._current_simulation_time >= self._max_simulation_seconds:
-            done = True
-            traci.close()
-        else:
-            done = False
+        signal_state = observations['signals']
 
         # Calculate Reward
         # 10 points for every car that passes the intersection
@@ -149,15 +137,16 @@ class SimplestIntersection(gym.Env):
         throughput_reward = throughput * 10
         waiting_punishment = cars_waiting_ns + cars_waiting_ew
         reward = throughput_reward - waiting_punishment
+        reward = float(reward)
 
         # Optionally we can pass additional info, we are not using that for now
         info = {"simulation_time":self._current_simulation_time}
 
         ## Update values
         # Update total signal changes
-        if TrafficLightStates(action).name != self._previous_signal:
+        if self._simulation._signal_states(action).name != self._previous_signal:
             self._total_signal_changes += 1
-        self._previous_signal = TrafficLightStates(action).name
+        self._previous_signal = self._simulation._signal_states(action).name
 
         # Update total throughput
         self._total_throughput += throughput
@@ -166,9 +155,18 @@ class SimplestIntersection(gym.Env):
         # Update total reward
         self._total_reward += reward
 
+        ## Check if simulation is finished
+        # End after the maximum simulation time steps
+        if self._current_simulation_time >= self._max_simulation_seconds:
+            done = True
+            self._simulation.endSimulation()
+        else:
+            done = False
+
         return observations, reward, done, info
 
     def render(self, mode='console'):
+
         if mode == 'console':
             print(
             '''
@@ -198,36 +196,4 @@ class SimplestIntersection(gym.Env):
 
     def close(self):
         # Close any existing session
-        try:
-            traci.close()
-        except traci.exceptions.FatalTraCIError:
-            print("No simulation running.")
-
-# Define environment
-env = SimplestIntersection(
-    sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo",
-    #sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo-gui",
-    sumo_config_path="_sumo\\simplest_intersection.sumocfg",
-    max_simulation_seconds=3600
-)
-# If the environment don't follow the interface, an error will be thrown
-check_env(env, warn=True)
-
-# Dummy loop of random actions
-env.reset()
-done = False
-step = 0
-while not done:
-  #action, _ = model.predict(obs, deterministic=True)
-  step += 1
-  action = env.action_space.sample()
-  print("Step {}".format(step))
-  print("Action: ", TrafficLightStates(action).name)
-  obs, reward, done, info = env.step(action)
-  print('obs=', obs, 'reward=', reward, 'done=', done, "info=", info)
-  env.render(mode='console')
-  if done:
-    # Note that the VecEnv resets automatically
-    # when a done signal is encountered
-    print("Goal reached!", "reward=", reward)
-    break
+        self._simulation.endSimulation()
