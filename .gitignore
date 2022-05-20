@@ -1,2 +1,4 @@
 # Virtual Environment
 /_penv
+_sumo/_config/simplest_intersection_detector_summary.xml
+_sumo/__pycache__/simplest_intersection_simulation.cpython-38.pyc

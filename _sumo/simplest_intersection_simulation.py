@@ -139,7 +139,7 @@ class SumoSimulation:
 
         return observations
 
-    def collapseSimulationStateToObservations(x):
+    def collapseSimulationStateToObservations(self,x):
 
         output_dict = dict()
         output_dict['approaching_cars'] = x.loc[x['status'] == 'Approaching_Interection'].index.nunique()
@@ -153,6 +153,8 @@ class SumoSimulation:
             (x['first_frame'] == False),
             'speed'
         ].mean()
+        if np.isnan(output_dict['average_speed']):
+            output_dict['average_speed'] = 0
         output_dict['accumulated_waiting_time'] = x.loc[x['status'] == 'Approaching_Interection','accumulated_waiting_time'].sum()
         output_dict['new_throughput'] = x.loc[x['new_throughput'] == True].index.nunique()
 
@@ -225,8 +227,9 @@ class SumoSimulation:
         
     def getCurrentObservations2(self):
 
+        self.updateCurrentSimulationState()
+
         return self._vehicles_state.groupby('route').apply(lambda x: self.collapseSimulationStateToObservations(x=x))
-        
     def changeSignalState(self,action):
         signal_string = self._signal_states(action).value
         print("changing state to {0}".format(signal_string))
