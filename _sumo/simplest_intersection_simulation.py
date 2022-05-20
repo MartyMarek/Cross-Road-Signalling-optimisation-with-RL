@@ -65,10 +65,12 @@ class SumoSimulation:
 
         return traci.simulation.getTime()
 
-    def stepSimulation(self):
-
+    def stepSimulation(self,step=None):
         # take the next simulation step (beginSimulation method must be called first)
-        traci.simulationStep()
+        if step:
+            traci.simulationStep(step=step)
+        else:
+            traci.simulationStep()
 
     def getCurrentObservations(self):
 
@@ -193,7 +195,7 @@ class SumoSimulation:
 
         return pd.Series(data=output_dict)
 
-    def updateCurrentSimulationState(self):
+    def getCurrentObservations2(self):
 
         # Get all vehicles
         vehicle_ids = traci.vehicle.getIDList()
@@ -257,16 +259,15 @@ class SumoSimulation:
 
             self._vehicles_state = pd.concat([self._vehicles_state[~self._vehicles_state.index.isin(vehicle_state.index)], vehicle_state])
             self._vehicles_state.update(vehicle_state)
+
+        traffic = self._vehicles_state.groupby('route').apply(lambda x: self.collapseSimulationStateToObservations(x=x))
+        signals = self._signal_states[traci.trafficlight.getRedYellowGreenState(tlsID='intersection')].value
+
+        return traffic,signals
         
-    def getCurrentObservations2(self):
-
-        self.updateCurrentSimulationState()
-
-        return self._vehicles_state.groupby('route').apply(lambda x: self.collapseSimulationStateToObservations(x=x))
-
     def changeSignalState(self,action):
         signal_string = self._signal_states(action).name
-        print("changing state to {0}".format(signal_string))
+        #print("changing state to {0}".format(signal_string))
         traci.trafficlight.setRedYellowGreenState('intersection',signal_string)
 
 

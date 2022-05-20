@@ -5,8 +5,8 @@
 
 <routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
     <!-- Vehicles, persons and containers (sorted by depart) -->
-    <flow id="flow_east_to_west" begin="0.00" from="east_entry" to="west_exit" end="3600.00" vehsPerHour="1800.00"/>
-    <flow id="flow_north_to_south" begin="0.00" from="north_entry" to="south_exit" end="3600.00" vehsPerHour="1800.00"/>
-    <flow id="flow_south_to_north" begin="0.00" from="south_entry" to="north_exit" end="3600.00" vehsPerHour="1800.00"/>
-    <flow id="flow_west_to_east" begin="0.00" from="west_entry" to="east_exit" end="3600.00" vehsPerHour="1800.00"/>
+    <flow id="flow_east_to_west" begin="0.00" from="east_entry" to="west_exit" end="360000.00" vehsPerHour="1800.00"/>
+    <flow id="flow_north_to_south" begin="0.00" from="north_entry" to="south_exit" end="360000.00" vehsPerHour="1800.00"/>
+    <flow id="flow_south_to_north" begin="0.00" from="south_entry" to="north_exit" end="360000.00" vehsPerHour="1800.00"/>
+    <flow id="flow_west_to_east" begin="0.00" from="west_entry" to="east_exit" end="360000.00" vehsPerHour="1800.00"/>
 </routes>
