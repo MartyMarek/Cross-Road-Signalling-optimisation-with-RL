@@ -19,14 +19,19 @@ sumoCmd = [sumoBinary, "-c", "_sumo\\_config\\simplest_intersection.sumocfg"]
 import traci
 traci.start(sumoCmd) # Need to press play in the GUI after this
 
+traci.trafficlight.getCompleteRedYellowGreenDefinition(tlsID='intersection')
+traci.trafficlight.getCompleteRedYellowGreenDefinition(tlsID='intersection')
+traci.trafficlight.getRedYellowGreenState(tlsID='intersection')
+traci.trafficlight.setRedYellowGreenState(tlsID='intersection',state='GGrrGGrr')
+traci.trafficlight.setRedYellowGreenState(tlsID='intersection',state='rrGGrrGG')
 
 traci.simulationStep()
 # Passed intersection
 
 # Create set of vehicles that have passed the intersection
 vehicles_state = pd.DataFrame()
-
 vehicles_passed_intersection = set()
+
 traci.simulationStep()
 
 # Get vehicles that have passed
@@ -40,7 +45,13 @@ for vehicle_id in vehicle_ids:
     speed = traci.vehicle.getSpeed(vehID=vehicle_id)
     route = vehicle_id.split(".")[0].replace("flow_","")
 
-    if speed == 0:
+
+    first_frame = False
+
+    if vehicle_id not in list(vehicles_state.index.unique()):
+        first_frame = True
+
+    if speed < 0.5 and not first_frame:
         stopped = True
     else:
         stopped = False
@@ -63,6 +74,7 @@ for vehicle_id in vehicle_ids:
         print("Approaching intersection.")
         status = 'Approaching_Interection'
 
+    
 
     vehicle_state = pd.DataFrame(
         {
@@ -74,12 +86,40 @@ for vehicle_id in vehicle_ids:
             'new_throughput': [new_throughput],
             'waiting_time': [waiting_time],
             'accumulated_waiting_time': [accumulated_waiting_time],
+            'first_frame': [first_frame]
         },
         index=[vehicle_id]
     )
 
     vehicles_state = pd.concat([vehicles_state[~vehicles_state.index.isin(vehicle_state.index)], vehicle_state])
-    vehicle_state.update(vehicle_state)
+    vehicles_state.update(vehicle_state)
+
+
+def collapseSimStateToObs(x):
+
+    output_dict = dict()
+    output_dict['approaching_cars'] = x.loc[x['status'] == 'Approaching_Interection'].index.nunique()
+    output_dict['stopped_cars'] = x.loc[
+        (x['status'] == 'Approaching_Interection') & 
+        (x['stopped'] == True)
+    ].index.nunique()
+    output_dict['average_speed'] = x.loc[
+        ((x['status'] == 'Approaching_Interection') |
+        (x['status'] == 'In_Interection')) &
+        (x['first_frame'] == False),
+        'speed'
+    ].mean()
+    output_dict['accumulated_waiting_time'] = x.loc[x['status'] == 'Approaching_Interection','accumulated_waiting_time'].sum()
+    output_dict['new_throughput'] = x.loc[x['new_throughput'] == True].index.nunique()
+
+    return pd.Series(data=output_dict)
+
+current_observations = vehicles_state.groupby('route').apply(lambda x: agg_func(x=x))
+current_observations
+vehicles_state
+
+
+
 vehicles_state
 
 traci.simulation.start()
