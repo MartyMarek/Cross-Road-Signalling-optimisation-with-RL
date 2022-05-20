@@ -263,8 +263,9 @@ class SumoSimulation:
         self.updateCurrentSimulationState()
 
         return self._vehicles_state.groupby('route').apply(lambda x: self.collapseSimulationStateToObservations(x=x))
+
     def changeSignalState(self,action):
-        signal_string = self._signal_states(action).value
+        signal_string = self._signal_states(action).name
         print("changing state to {0}".format(signal_string))
         traci.trafficlight.setRedYellowGreenState('intersection',signal_string)
 

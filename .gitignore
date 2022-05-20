@@ -2,3 +2,6 @@
 /_penv
 _sumo/_config/simplest_intersection_detector_summary.xml
 _sumo/__pycache__/simplest_intersection_simulation.cpython-38.pyc
+__pycache__
+_env/__pycache__/simplest_intersection.cpython-38.pyc
+_sumo/__pycache__/simplest_intersection_simulation.cpython-38.pyc

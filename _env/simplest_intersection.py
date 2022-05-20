@@ -102,7 +102,7 @@ class SimplestIntersection(gym.Env):
     def step(self, action):
         
         # Step SUMO
-        #self._simulation.changeSignalState(action=action) # Getting an error
+        self._simulation.changeSignalState(action=action) # Getting an error
         self._simulation.stepSimulation()
 
         # Increment the time step
@@ -135,11 +135,11 @@ class SimplestIntersection(gym.Env):
         # 10 points for every car that passes the intersection
         # -1 point for every car waiting at the intersection
         # This will likely be a separate class method in the actual implementation
-        throughput_reward = throughput * 10
-        waiting_punishment = cars_waiting_ns + cars_waiting_ew
-        reward = throughput_reward - waiting_punishment
-        reward = float(reward)
-
+        # throughput_reward = throughput * 10
+        # waiting_punishment = cars_waiting_ns + cars_waiting_ew
+        # reward = throughput_reward - waiting_punishment
+        # reward = float(reward)
+        reward = self.calculate_reward_01(throughput=throughput)
         # Optionally we can pass additional info, we are not using that for now
         info = {"simulation_time":self._current_simulation_time}
 
@@ -198,3 +198,9 @@ class SimplestIntersection(gym.Env):
     def close(self):
         # Close any existing session
         self._simulation.endSimulation()
+
+    def calculate_reward_01(self,throughput):
+
+        reward = float(throughput * 10)
+
+        return reward
