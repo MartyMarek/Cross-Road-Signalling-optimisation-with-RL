@@ -5,8 +5,8 @@ from _sumo.simplest_intersection_simulation import SignalStates, SumoSimulation
 
 # Define simulation
 simulation = SumoSimulation(
-    sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo",
-    #sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo-gui",
+    #sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo",
+    sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo-gui",
     sumo_config_path="_sumo\\_config\\simplest_intersection.sumocfg",
     signal_states=SignalStates
 )
@@ -14,7 +14,7 @@ simulation = SumoSimulation(
 # Define environment
 env = SimplestIntersection(
     simulation=simulation,
-    max_simulation_seconds=3600
+    max_simulation_seconds=1000
 )
 
 # Validate the environment

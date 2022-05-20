@@ -102,6 +102,7 @@ class SimplestIntersection(gym.Env):
     def step(self, action):
         
         # Step SUMO
+        #self._simulation.changeSignalState(action=action) # Getting an error
         self._simulation.stepSimulation()
 
         # Increment the time step

@@ -130,6 +130,7 @@ class SumoSimulation:
 
         # throughput - this can be either the total vehicle past so far or the total / the simulation step
         throughput = len(self.vehiclesPast)
+        self.vehiclesPast.clear()
 
         observations = {
             "traffic": np.array([vertical,horizontal,vTime,hTime,throughput], dtype='int64'),
@@ -137,5 +138,10 @@ class SumoSimulation:
         }
 
         return observations
+
+    def changeSignalState(self,action):
+        signal_string = self._signal_states(action).value
+        print("changing state to {0}".format(signal_string))
+        traci.trafficlight.setRedYellowGreenState('intersection',signal_string)
 
 
