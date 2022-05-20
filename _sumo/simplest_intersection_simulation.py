@@ -20,9 +20,18 @@ class SumoSimulation:
         self._sumo_command = [self._sumo_binary, "-c", self._sumo_config]
         self._signal_states = signal_states
 
-        # stores the vehicle id's that have moved past the intersection
+        # stores the vehicle id's that have moved past the intersection in this step
         self.vehiclesPast = set()
+
+        # stores the vehicle id's that have moved past the intersection during the entire simulation
         self.vehiclesPastHistory = set()
+
+        # stores the vehicle id's for all vehicles that have entered the simulation. This is used to find the
+        # vehicles that have entered the simulation this step
+        self.allVehicles = set()
+
+        # stores the vehicle id's that entered into the simulation on this step
+        self.newVehicles = set()
 
         # Store data
         self._vehicles_state = pd.DataFrame() # Updated every step with the current state of all vehicles
@@ -66,25 +75,41 @@ class SumoSimulation:
         # stores the vehicles in this step of the simulation
         vehicles_df = pd.DataFrame()
 
-        # get all vehicle id's in teh simulation and the vehicles that have left the simulation
+        # get all vehicle id's in the simulation
         vehicle_ids = list(traci.vehicle.getIDList())
-        arrivedVehicles = list(traci.simulation.getArrivedIDList())
 
+        # find the newest vehicles that have just entered the simulation
+        # if our all vehicles set is empty we are at the start of the simulation, so add the first
+        # arriving vehicles
+        if len(self.allVehicles) == 0:
+            for vehicles in vehicle_ids:
+                self.allVehicles.add(vehicles)
+        else:
+            # check the latest vehicles list to the set of all vehicles and mark the difference as
+            # the newly arrived vehicles into the simulation
+            for vehicle in vehicle_ids:
+                if vehicle not in self.allVehicles:
+                    self.newVehicles.add(vehicle)
 
-        # get any vehicle that have past the intersection on this turn
+        # get any vehicle that has past the intersection on this turn
         for pastVehicle in traci.multientryexit.getLastStepVehicleIDs('intersection_detector'):
             # this set is only used to store vehicles that have passed the interection this step
             self.vehiclesPast.add(pastVehicle)
 
             # this set keeps all vehicles past so we can delete them from the overall list
-            self.vehiclesPastHistory(pastVehicle)
+            self.vehiclesPastHistory.add(pastVehicle)
 
         # now remove the cars that have past the intersection from the list of vehicle id's we are tracking
         for pastVehicle in self.vehiclesPastHistory:
             if pastVehicle in vehicle_ids:
                 vehicle_ids.remove(pastVehicle)
 
+        # also remove the newly arrived vehicles as they have a speed of 0 on their first turn
+        for vehicle in self.newVehicles:
+            if vehicle in vehicle_ids:
+                vehicle_ids.remove(vehicle)
 
+        # the left over vehicle id's should be the ones that are either approaching the lights or stopped at the lights
         for vehicle_id in vehicle_ids:
 
             stopped_state = traci.vehicle.getStopState(vehID=vehicle_id)
@@ -128,9 +153,17 @@ class SumoSimulation:
 
         lightState = self._signal_states[lightStateString].value
 
-        # throughput - this can be either the total vehicle past so far or the total / the simulation step
+        # throughput - is now only the number of cars that have passed the intersection on this turn
         throughput = len(self.vehiclesPast)
+
+        # add the newly arrived vehicles to the allvehicles list so next turn they are counted
+        self.allVehicles.update(self.newVehicles)
+
+        # reset the sets that track step by step
         self.vehiclesPast.clear()
+        self.newVehicles.clear()
+
+        print(vertical, horizontal, vTime, hTime, throughput)
 
         observations = {
             "traffic": np.array([vertical,horizontal,vTime,hTime,throughput], dtype='int64'),
