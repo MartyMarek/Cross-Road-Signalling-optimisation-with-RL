@@ -8,7 +8,7 @@ import random
 import traci
 from _sumo.simplest_intersection_simulation import SumoSimulation
 from _env.reward import *
-
+from datastore import *
 
 
 class SimplestIntersection(gym.Env):
@@ -35,25 +35,11 @@ class SimplestIntersection(gym.Env):
         '''
         Discrete actions corresponding to each possible traffic light state for the intersection
         '''
-        
+
+        # action space
         self.action_space = Discrete(len(self._simulation._signal_states))
 
-        ## Observation space
-        '''
-        Observations corresponding to the following metrics in the latest timestep:
-        Traffic
-            - Number of cars waiting at the intersection in the N/S direction
-            - Number of cars waiting at the intersection in the E/W direction
-            - Sum of accumulated waiting time for all cars waiting at the intersection in the N/S directions
-            - Sum of accumulated waiting time for all cars waiting at the intersection in the E/W directions
-            - Number of new vehicles that have entered/passed the intersection (throughput)
-        Signals
-            - Traffic light state 
-        '''
-        # self.observation_space = Dict({
-        #     "traffic": Box(low=0, high=10000, shape=(5,4), dtype=np.int64),
-        #     "signals": Discrete(len(self._simulation._signal_states))
-        # })
+        # observation space
         self.observation_space = Dict({
             "traffic": Box(low=0, high=10000, shape=(20,),dtype=np.float64),
             "current_signal": Discrete(len(self._simulation._signal_states)),
@@ -71,6 +57,10 @@ class SimplestIntersection(gym.Env):
         self._total_reward = 0
         self._done = False
         self._history = None
+
+        # used to store each state and save to a file
+        self.datastore = DataStore()
+
 
     def reset(self):
         """
@@ -117,6 +107,11 @@ class SimplestIntersection(gym.Env):
 
         traffic,current_signal_state,previous_signal_state,previous_signal_active_time = self._simulation.getCurrentObservations()
 
+        # save the observation to a datastore
+        traffic_record = traffic.values.flatten()
+        traffic_record = np.insert(traffic_record, 0, self._current_time_step)
+        self.datastore.addNewRecord(traffic_record)
+
         observations = {
             "traffic": traffic.values.flatten(),
             "current_signal": current_signal_state,
@@ -157,12 +152,14 @@ class SimplestIntersection(gym.Env):
         if self._current_simulation_time >= self._max_simulation_seconds:
             done = True
             self._simulation.endSimulation()
+
+            # save observations to a file (This will also reset the datastore)
+            self.datastore.saveCurrentRecord()
         else:
             done = False
 
-
-
         return observations, reward, done, info
+
 
     def render(self, mode='console'):
 

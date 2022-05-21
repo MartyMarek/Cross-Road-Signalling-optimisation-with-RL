@@ -6,11 +6,10 @@ class DataStore:
     # static class variable
     output_df = pd.DataFrame(
         columns=['step',
-                    'ew_approaching', 'ns_approaching', 'sn_approaching', 'we_approaching',
-                    'ew_stopped', 'ns_stopped', 'sn_stopped', 'we_stopped',
-                    'ew_avrspeed', 'ns_avrspeed', 'sn_avrspeed', 'we_avrspeed',
-                    'ew_waiting', 'ns_waiting', 'sn_waiting', 'we_waiting',
-                    'ew_newthrough', 'ns_newthrough', 'sn_newthrough', 'we_newthrough'
+                    'ew_approaching', 'ew_stopped', 'ew_avrspeed', 'ew_waiting', 'ew_newthrough',
+                    'ns_approaching', 'ns_stopped', 'ns_avrspeed', 'ns_waiting', 'ns_newthrough',
+                    'sn_approaching', 'sn_stopped', 'sn_avrspeed', 'sn_waiting', 'sn_newthrough',
+                    'we_approaching', 'we_stopped', 'we_avrspeed', 'we_waiting', 'we_newthrough'
                 ]
     )
 
@@ -22,5 +21,6 @@ class DataStore:
         self.output_df.iloc[0:0]
 
     def saveCurrentRecord(self):
-        self.output_df.to_csv(index=False)
+        print("saving observation file..")
+        self.output_df.to_csv('observations.csv', index=False)
         self._clearData()
