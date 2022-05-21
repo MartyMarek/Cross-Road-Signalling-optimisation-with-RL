@@ -117,9 +117,18 @@ class SimplestIntersection(gym.Env):
 
         traffic,current_signal_state,previous_signal_state,previous_signal_active_time = self._simulation.getCurrentObservations()
 
+        observations = {
+            "traffic": traffic.values.flatten(),
+            "current_signal": current_signal_state,
+            "previous_signal": int(previous_signal_state),
+            "previous_signal_active_time": np.array([previous_signal_active_time], dtype=np.int64)
+        }
+
         # Calculate Reward
         throughput = traffic['new_throughput'].sum()
         reward = calculate_reward_01(throughput=throughput)
+
+        #reward = calculate_reward_02(observations)
 
         # Optionally we can pass additional info, we are not using that for now
         info = {
@@ -151,17 +160,7 @@ class SimplestIntersection(gym.Env):
         else:
             done = False
 
-        # observations = {
-        #     "traffic": traffic.values.flatten(),
-        #     "signals": signals
-        # }
 
-        observations = {
-            "traffic": traffic.values.flatten(),
-            "current_signal": current_signal_state,
-            "previous_signal": int(previous_signal_state),
-            "previous_signal_active_time": np.array([previous_signal_active_time],dtype=np.int64)
-        }
 
         return observations, reward, done, info
 
