@@ -293,7 +293,7 @@ class SumoSimulation:
         # Get previous signal active time
         previous_signal_active_time = self._previous_signal_active_time
         # Increase the previous signal active time by 1
-        if current_signal_state == self._previous_signal_state:
+        if current_signal_state == previous_signal_state:
             self._previous_signal_active_time += 1
         else:
             self._previous_signal_active_time = 1

@@ -97,8 +97,5 @@ while not done:
     print("Goal reached!", "reward=", test_env._total_reward)
     break
 
-step += 1
-action = test_env.action_space.sample()
-obs, reward, done, info = test_env.step(action)
-print(info)
+
 #endregion
