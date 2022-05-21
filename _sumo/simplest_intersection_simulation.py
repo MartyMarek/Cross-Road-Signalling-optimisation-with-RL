@@ -36,6 +36,8 @@ class SumoSimulation:
         # Store data
         self._vehicles_state = pd.DataFrame() # Updated every step with the current state of all vehicles
         self._vehicles_passed_intersection = set() # A set of vehicles that have passed the intersection
+        self._previous_signal_state = None
+        self._previous_signal_active_time = 1
 
     def categorise(self, data):
 
@@ -173,26 +175,45 @@ class SumoSimulation:
         }
 
         return observations
-
+ 
     def collapseSimulationStateToObservations(self,x):
+        '''
+        This is an aggregation function that takes a pandas dataframe grouped by route as input (x).
+        The intention is to output the following for each route:
+        - Approaching Cars
+        - Stopped Cars
+        - Status (Approaching_Intersection, In_Intersection, Departed_Intersection)
+        - Average Speed
+        - Accumulated Waiting Time
+        - New Throughput
+        '''
 
+        # Create empty dictionary
         output_dict = dict()
+        # Get number of vehicles approaching the intersection
         output_dict['approaching_cars'] = x.loc[x['status'] == 'Approaching_Interection'].index.nunique()
+        # Get number of vehicles approaching the intersection that are stopped
         output_dict['stopped_cars'] = x.loc[
             (x['status'] == 'Approaching_Interection') & 
             (x['stopped'] == True)
         ].index.nunique()
+        # Get the average speed for vehicles either approaching the intersection or in the intersection
         output_dict['average_speed'] = x.loc[
             ((x['status'] == 'Approaching_Interection') |
             (x['status'] == 'In_Interection')) &
             (x['first_frame'] == False),
             'speed'
         ].mean()
+        # Replace NaN average speeds with 0
         if np.isnan(output_dict['average_speed']):
             output_dict['average_speed'] = 0
+        # Get accumulated waiting time for vehicles approaching the intersection
         output_dict['accumulated_waiting_time'] = x.loc[x['status'] == 'Approaching_Interection','accumulated_waiting_time'].sum()
+        # Get number of vehicles that are new throughput
         output_dict['new_throughput'] = x.loc[x['new_throughput'] == True].index.nunique()
 
+        # Return a pandas series for each group
+        # This is combined to a dataframe when the aggregate function is finished
         return pd.Series(data=output_dict)
 
     def getCurrentObservations2(self):
@@ -237,11 +258,6 @@ class SumoSimulation:
             elif vehicle_id not in in_intersection_ids and vehicle_id not in self._vehicles_passed_intersection:
                 status = 'Approaching_Interection'
 
-            # Check if first frame (need this because cars enter the simulation at 0 speed)
-            first_frame = False
-
-
-
             vehicle_state = pd.DataFrame(
                 {
                     #'vehicle_id': [vehicle_id],
@@ -257,17 +273,38 @@ class SumoSimulation:
                 index=[vehicle_id]
             )
 
+            # The two steps below are equivalent to an upsert
+            # Concatenate new vehicles to the vehicles state data frame
             self._vehicles_state = pd.concat([self._vehicles_state[~self._vehicles_state.index.isin(vehicle_state.index)], vehicle_state])
+            # Update values in the vehicles state data frame with latest values
             self._vehicles_state.update(vehicle_state)
 
+        # Group vehicles in vehicles state data frame by route and calculate desired observations
         traffic = self._vehicles_state.groupby('route').apply(lambda x: self.collapseSimulationStateToObservations(x=x))
-        signals = self._signal_states[traci.trafficlight.getRedYellowGreenState(tlsID='intersection')].value
+        traffic.sort_index(inplace=True)
+        # Get the current signal state
+        current_signal_state = self._signal_states[traci.trafficlight.getRedYellowGreenState(tlsID='intersection')].value
+        # Get the previous signal state
+        previous_signal_state = self._previous_signal_state
+        if not previous_signal_state:
+            previous_signal_state = current_signal_state
+        # Update previous signal state with current signal
+        self._previous_signal_state = current_signal_state
+        # Get previous signal active time
+        previous_signal_active_time = self._previous_signal_active_time
+        # Increase the previous signal active time by 1
+        if current_signal_state == self._previous_signal_state:
+            self._previous_signal_active_time += 1
+        else:
+            self._previous_signal_active_time = 1
+            
+        return traffic,current_signal_state,previous_signal_state,previous_signal_active_time
 
-        return traffic,signals
-        
+    def getSignalState(self):
+        return self._signal_states[traci.trafficlight.getRedYellowGreenState(tlsID='intersection')].value
+
     def changeSignalState(self,action):
         signal_string = self._signal_states(action).name
-        #print("changing state to {0}".format(signal_string))
         traci.trafficlight.setRedYellowGreenState('intersection',signal_string)
 
 

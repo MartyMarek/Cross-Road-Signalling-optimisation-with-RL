@@ -1,9 +1,9 @@
 #import gym
-#from stable_baselines3.common.env_checker import check_env
+from stable_baselines3.common.env_checker import check_env
 from _env.simplest_intersection import SimplestIntersection, SimplestIntersection2
 from _sumo.simplest_intersection_simulation import SignalStates, SumoSimulation
-from stable_baselines3 import PPO, DQN, A2C
-from stable_baselines3.common.evaluation import evaluate_policy
+#from stable_baselines3 import PPO, DQN, A2C
+#from stable_baselines3.common.evaluation import evaluate_policy
 
 # Define simulation
 simulation = SumoSimulation(
@@ -25,21 +25,28 @@ train_env = SimplestIntersection2(
 #     max_simulation_seconds=100
 # )
 
-# Validate the environment
-#check_env(env, warn=True)
+
 
 #region Train model
 
 #model = PPO('MultiInputPolicy', train_env, learning_rate=1e-3,verbose=0,device='cuda')
 model = A2C('MultiInputPolicy', train_env, learning_rate=0.001,verbose=0,device='auto')
 model.learn(total_timesteps=int(36000))
-
+model.save("a2c_testing")
+model = model.load("a2c_testing")
 #endregion
 
 #region Test model
 
+validation_simulation = SumoSimulation(
+    #sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo",
+    sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo-gui",
+    sumo_config_path="_sumo\\_config\\simplest_intersection.sumocfg",
+    signal_states=SignalStates
+)
+
 validation_env = SimplestIntersection2(
-    simulation=simulation,
+    simulation=validation_simulation,
     max_simulation_seconds=900
 )
 observation = validation_env.reset()
@@ -65,6 +72,9 @@ test_env = SimplestIntersection2(
     simulation=simulation,
     max_simulation_seconds=900
 )
+# Validate the environment
+check_env(test_env, warn=True)
+
 observation = validation_env.reset()
 
 test_env.reset()
@@ -87,4 +97,8 @@ while not done:
     print("Goal reached!", "reward=", test_env._total_reward)
     break
 
+step += 1
+action = test_env.action_space.sample()
+obs, reward, done, info = test_env.step(action)
+print(info)
 #endregion

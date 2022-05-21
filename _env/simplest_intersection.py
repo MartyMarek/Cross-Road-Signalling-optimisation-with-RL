@@ -253,7 +253,9 @@ class SimplestIntersection2(gym.Env):
         # })
         self.observation_space = Dict({
             "traffic": Box(low=0, high=10000, shape=(20,),dtype=np.float64),
-            "signals": Discrete(len(self._simulation._signal_states))
+            "current_signal": Discrete(len(self._simulation._signal_states)),
+            "previous_signal": Discrete(len(self._simulation._signal_states)),
+            "previous_signal_active_time": Box(low=0, high=10000, shape=(1,),dtype=np.int64)
         })
         
         # Reset counters
@@ -300,9 +302,16 @@ class SimplestIntersection2(gym.Env):
         #     "signals": 0
         # }
 
+        # observations = {
+        #     "traffic": np.zeros((5,4),dtype=np.float64).flatten(),
+        #     "signals": 0
+        # }
+
         observations = {
-            "traffic": np.zeros((5,4),dtype=np.float64).flatten(),
-            "signals": 0
+            "traffic":np.zeros((20,),dtype=np.float64),
+            "current_signal": self._simulation.getSignalState(),
+            "previous_signal": self._simulation.getSignalState(),
+            "previous_signal_active_time": np.array([self._simulation._previous_signal_active_time],dtype=np.int64)
         }
         
         #observations = self._simulation.getCurrentObservations()
@@ -325,7 +334,7 @@ class SimplestIntersection2(gym.Env):
         #     "signals": signal_state
         # }
 
-        traffic, signals = self._simulation.getCurrentObservations2()
+        traffic,current_signal_state,previous_signal_state,previous_signal_active_time = self._simulation.getCurrentObservations2()
 
         # # Get cars waiting in N/S direction
         # # Get cars approaching in N/S direction
@@ -354,7 +363,9 @@ class SimplestIntersection2(gym.Env):
         # Optionally we can pass additional info, we are not using that for now
         info = {
             "traffic": traffic,
-            "signals": signals,
+            "signal_state": current_signal_state,
+            "previous_signal_state": previous_signal_state,
+            "previous_signal_active_time": previous_signal_active_time,
             "simulation_time":self._current_simulation_time
         }
 
@@ -379,9 +390,16 @@ class SimplestIntersection2(gym.Env):
         else:
             done = False
 
+        # observations = {
+        #     "traffic": traffic.values.flatten(),
+        #     "signals": signals
+        # }
+
         observations = {
             "traffic": traffic.values.flatten(),
-            "signals": signals
+            "current_signal": current_signal_state,
+            "previous_signal": int(previous_signal_state),
+            "previous_signal_active_time": np.array([previous_signal_active_time],dtype=np.int64)
         }
 
         return observations, reward, done, info

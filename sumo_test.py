@@ -1,11 +1,21 @@
 import os, sys
 import pandas as pd
+import xml.etree.ElementTree as ET
 
 # if 'SUMO_HOME' in os.environ:
 #     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
 #     sys.path.append(tools)
 # else:
 #     sys.exit("please declare environment variable 'SUMO_HOME'")
+
+traffic = tree = ET.parse('_sumo\\_config\\simplest_intersection_traffic.rou.xml')
+root = traffic.getroot()
+children = root.getchildren()
+
+for child in children:
+    if 'flow' in child.attrib['id']:
+        print("flow")
+
 
 # Running Sumo
 sys.path.append(os.path.join('c:', os.sep, 'Program Files (x86)', 'Eclipse', 'Sumo','tools'))
