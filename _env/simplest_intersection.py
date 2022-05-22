@@ -359,7 +359,15 @@ class SimplestIntersection2(gym.Env):
         # reward = throughput_reward - waiting_punishment
         # reward = float(reward)
         throughput = traffic['new_throughput'].sum()
-        reward = self.calculate_reward_01(throughput=throughput)
+        #reward = self.calculate_reward_01(throughput=throughput)
+
+        reward = self.calculate_reward_02(
+            throughput=traffic['new_throughput'].sum(),
+            cars_waiting=traffic['stopped_cars'].sum(),
+            current_signal_state=current_signal_state,
+            previous_signal_state=previous_signal_state,
+            previous_signal_active_time=previous_signal_active_time
+        )
         # Optionally we can pass additional info, we are not using that for now
         info = {
             "traffic": traffic,
@@ -440,6 +448,20 @@ class SimplestIntersection2(gym.Env):
     def calculate_reward_01(self,throughput):
 
         reward = float(throughput * 10)
+
+        return reward
+
+    def calculate_reward_02(self,throughput,cars_waiting,current_signal_state,previous_signal_state,previous_signal_active_time):
+
+        throughput_reward = throughput * 10
+        waiting_punishment = cars_waiting * 2
+
+        if current_signal_state != previous_signal_state and previous_signal_active_time < 5:
+            short_signal_punishment = 50
+        else:
+            short_signal_punishment = 0
+
+        reward = throughput_reward - waiting_punishment - short_signal_punishment
 
         return reward
 

@@ -2,8 +2,8 @@
 from stable_baselines3.common.env_checker import check_env
 from _env.simplest_intersection import SimplestIntersection, SimplestIntersection2
 from _sumo.simplest_intersection_simulation import SignalStates, SumoSimulation
-#from stable_baselines3 import PPO, DQN, A2C
-#from stable_baselines3.common.evaluation import evaluate_policy
+from stable_baselines3 import PPO, DQN, A2C, DDPG
+from stable_baselines3.common.evaluation import evaluate_policy
 
 # Define simulation
 simulation = SumoSimulation(
@@ -17,7 +17,7 @@ simulation = SumoSimulation(
 # Define environment
 train_env = SimplestIntersection2(
     simulation=simulation,
-    max_simulation_seconds=360000
+    max_simulation_seconds=900
 )
 
 # train_env = SimplestIntersection(
@@ -26,14 +26,15 @@ train_env = SimplestIntersection2(
 # )
 
 
-
 #region Train model
 
 #model = PPO('MultiInputPolicy', train_env, learning_rate=1e-3,verbose=0,device='cuda')
-model = A2C('MultiInputPolicy', train_env, learning_rate=0.001,verbose=0,device='auto')
-model.learn(total_timesteps=int(36000))
-model.save("a2c_testing")
-model = model.load("a2c_testing")
+model = DDPG('MultiInputPolicy', train_env, learning_rate=0.001,verbose=0,device='auto')
+model.learn(n_eval_episodes=10)
+#model.save("model_ppo_tts_3600_lr_1e-3_reward_02")
+model.save("model_ddpg_tts_9000_lr_1e-3_reward_02a")
+#model = model.load("a2c_testing")
+train_env._simulation.endSimulation()
 #endregion
 
 #region Test model
