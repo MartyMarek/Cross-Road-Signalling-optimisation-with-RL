@@ -1,0 +1,72 @@
+West to East (and East to West) 
+		
+if both lights are red
+	loop until totalRedLight = 48 seconds  (minimum red light time is 48 seconds)
+		increment totalRedLight by one second
+		
+	if car waiting in straight lane only AND no cars opposite side
+			OR car waiting in both lanes AND no cars opposite side
+			
+		ChangeLights(GG) - GG: Green straight, Green Turn
+		Wait(8)
+		ChangeLights(GO) - GO: Green straight, Orange Turn
+		Wait(4)
+		ChangeLights(GR) - GR: Green Straight, Red Turn
+		Wait(10)
+		ChangeLights(OR)
+		Wait(4 seconds)
+		ChangeLights(RR)
+		
+	if car waiting in right turn lane only
+		OR cars waiting in either lane AND cars are waiting opposite side 
+		
+		ChangeLights(RG) - RG: Red Straight, Green Turn
+		Wait(6 seconds)
+		ChangeLights(RO) - RO: Red Straight, Orange Turn
+		Wait(4 seconds)
+		ChangeLights(RR) - RR: Red Straight, Red Turn
+		Wait(6 seconds)
+		ChangeLights(GR) - GR: Green Straight, Red Turn
+		Wait(28 seconds)
+		ChangeLights(OR)
+		Wait(4 seconds)
+		ChangeLights(RR)
+
+	- if there are no cars waiting on either side after 48 seconds
+	loop while no cars are waiting  (if there are no cars keep red and increment timer)
+		increment totalRedLight by one second
+		
+	- once a car is waiting the timer will allow another 6 seconds 
+	Wait(6)
+	
+	- now repeat the above
+	if car waiting in straight lane only AND no cars opposite side
+			OR car waiting in both lanes AND no cars opposite side
+			
+		ChangeLights(GG) - GG: Green straight, Green Turn
+		Wait(8)
+		ChangeLights(GO) - GO: Green straight, Orange Turn
+		Wait(4)
+		ChangeLights(GR) - GR: Green Straight, Red Turn
+		Wait(10)
+		ChangeLights(OR)
+		Wait(4 seconds)
+		ChangeLights(RR)
+		
+	if car waiting in right turn lane only
+		OR cars waiting in either lane AND cars are waiting opposite side 
+		
+		ChangeLights(RG) - RG: Red Straight, Green Turn
+		Wait(6 seconds)
+		ChangeLights(RO) - RO: Red Straight, Orange Turn
+		Wait(4 seconds)
+		ChangeLights(RR) - RR: Red Straight, Red Turn
+		Wait(6 seconds)
+		ChangeLights(GR) - GR: Green Straight, Red Turn
+		Wait(28 seconds)
+		ChangeLights(OR)
+		Wait(4 seconds)
+		ChangeLights(RR)
+	
+
+	
