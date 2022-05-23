@@ -1,4 +1,4 @@
-West to East (and East to West) 
+West to East (and East to West) PSEUDO CODE
 		
 if both lights are red
 	loop until totalRedLight = 48 seconds  (minimum red light time is 48 seconds)
