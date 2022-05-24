@@ -5,10 +5,14 @@ import traci
 from enum import Enum
 
 class SignalStates(Enum):
-  GGrrGGrr = 0 # N/S Green, E/W Red
-  yyrryyrr = 1 # N/S Yellow, E/W Red
-  rrGGrrGG = 2 # N/S Red, E/W Green
-  rryyrryy = 3 # N/S Red, E/W Yellow
+  rgrrrgrr = 0
+  ryrrryrr = 1
+  GrrrGrrr = 2
+  yrrryrrr = 3
+  rrrgrrrg = 4
+  rrryrrry = 5
+  rrGrrrGr = 6
+  rryrrryr = 7
 
 class SumoSimulation:
 
@@ -19,7 +23,8 @@ class SumoSimulation:
         self._sumo_config = sumo_config_path
         self._sumo_command = [self._sumo_binary, "-c", self._sumo_config]
         self._signal_states = signal_states
-
+        
+        
         # Store data
         self._vehicles_state = pd.DataFrame() # Updated every step with the current state of all vehicles
         self._vehicles_passed_intersection = set() # A set of vehicles that have passed the intersection
@@ -28,6 +33,12 @@ class SumoSimulation:
 
     def beginSimulation(self):
         traci.start(self._sumo_command)  # Need to press play in the GUI after this
+
+        # Get a list of routes to build a standard observation frame
+        # Required for when no cars from a specific route are in the simulation at a given time step
+        self._routes = set()
+        for route in traci.route.getIDList():
+            self._routes.add(route.split(".")[0].replace("!","").replace("flow_",""))
 
     def endSimulation(self):
         try:
@@ -152,7 +163,20 @@ class SumoSimulation:
 
         # Group vehicles in vehicles state data frame by route and calculate desired observations
         traffic = self._vehicles_state.groupby('route').apply(lambda x: self.collapseSimulationStateToObservations(x=x))
-        traffic.sort_index(inplace=True)
+        # Create standard traffic observation space
+        traffic_standard = pd.DataFrame(
+            columns=[
+                'approaching_cars',
+                'stopped_cars',
+                'average_speed',
+                'accumulated_waiting_time',
+                'new_throughput'
+            ],
+            index=self._routes
+        ).fillna(0).sort_index()
+        traffic_standard.index.name = 'routes'
+        # Update standard traffic observation space with actual values
+        traffic_standard.update(traffic)
         # Get the current signal state
         current_signal_state = self._signal_states[traci.trafficlight.getRedYellowGreenState(tlsID='intersection')].value
         # Get the previous signal state
@@ -169,7 +193,7 @@ class SumoSimulation:
         else:
             self._previous_signal_active_time = 1
             
-        return traffic,current_signal_state,previous_signal_state,previous_signal_active_time
+        return traffic_standard,current_signal_state,previous_signal_state,previous_signal_active_time
 
     def getSignalState(self):
         return self._signal_states[traci.trafficlight.getRedYellowGreenState(tlsID='intersection')].value

@@ -6,9 +6,9 @@ import numpy as np
 from enum import Enum
 import random
 import traci
-from _sumo.simplest_intersection_simulation import SumoSimulation
-from _env.reward import *
-from datastore import *
+from final_simulation._sumo.simplest_intersection_simulation import SumoSimulation
+from final_simulation._env.reward import *
+from final_simulation.datastore import *
 
 
 class SimplestIntersection(gym.Env):
@@ -29,7 +29,7 @@ class SimplestIntersection(gym.Env):
         # SUMO Setup
         self._simulation = simulation
         self._max_simulation_seconds = max_simulation_seconds
-
+        
         # Spaces
         ## Define action space
         '''
@@ -41,7 +41,7 @@ class SimplestIntersection(gym.Env):
 
         # observation space
         self.observation_space = Dict({
-            "traffic": Box(low=0, high=10000, shape=(20,),dtype=np.float64),
+            "traffic": Box(low=0, high=10000, shape=(60,),dtype=np.float64),
             "current_signal": Discrete(len(self._simulation._signal_states)),
             "previous_signal": Discrete(len(self._simulation._signal_states)),
             "previous_signal_active_time": Box(low=0, high=10000, shape=(1,),dtype=np.int64)
@@ -87,7 +87,7 @@ class SimplestIntersection(gym.Env):
         self._history = None
 
         observations = {
-            "traffic":np.zeros((20,),dtype=np.float64),
+            "traffic":np.zeros((60,),dtype=np.float64),
             "current_signal": self._simulation.getSignalState(),
             "previous_signal": self._simulation.getSignalState(),
             "previous_signal_active_time": np.array([self._simulation._previous_signal_active_time],dtype=np.int64)
@@ -110,7 +110,7 @@ class SimplestIntersection(gym.Env):
         # save the observation to a datastore
         traffic_record = traffic.values.flatten()
         traffic_record = np.insert(traffic_record, 0, self._current_time_step)
-        self.datastore.addNewRecord(traffic_record)
+        #self.datastore.addNewRecord(traffic_record) # TODO Something here is broken
 
         observations = {
             "traffic": traffic.values.flatten(),

@@ -121,7 +121,14 @@ class SimplestIntersection(gym.Env):
 
         # Calculate Reward
         throughput = traffic['new_throughput'].sum()
-        reward = calculate_reward_01(throughput=throughput)
+        #reward = calculate_reward_01(throughput=throughput)
+        reward = calculate_reward_03(
+            throughput=traffic['new_throughput'].sum(),
+            cars_waiting=traffic['stopped_cars'].sum(),
+            current_signal_state=current_signal_state,
+            previous_signal_state=previous_signal_state,
+            previous_signal_active_time=previous_signal_active_time
+        )
 
         #reward = calculate_reward_02(observations)
 

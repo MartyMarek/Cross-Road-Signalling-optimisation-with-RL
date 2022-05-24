@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2022-05-25 00:12:40 by Eclipse SUMO netedit Version 1.13.0
+-->
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+    <!-- Vehicles, persons and containers (sorted by depart) -->
+    <flow id="flow_east_to_north" begin="0.00" from="east_entry" to="north_exit" end="360000.00" vehsPerHour="12.00"/>
+    <flow id="flow_east_to_south" begin="0.00" from="east_entry" to="south_exit" end="360000.00" vehsPerHour="57.00"/>
+    <flow id="flow_east_to_west" begin="0.00" from="east_entry" to="west_exit" end="360000.00" vehsPerHour="69.00"/>
+    <flow id="flow_north_to_east" begin="0.00" from="north_entry" to="east_exit" end="360000.00" vehsPerHour="9.00"/>
+    <flow id="flow_north_to_south" begin="0.00" from="north_entry" to="south_exit" end="360000.00" vehsPerHour="572.97"/>
+    <flow id="flow_north_to_west" begin="0.00" from="north_entry" to="west_exit" end="360000.00" vehsPerHour="189.00"/>
+    <flow id="flow_south_to_east" begin="0.00" from="south_entry" to="east_exit" end="360000.00" vehsPerHour="36.00"/>
+    <flow id="flow_south_to_north" begin="0.00" from="south_entry" to="north_exit" end="360000.00" vehsPerHour="741.05"/>
+    <flow id="flow_south_to_west" begin="0.00" from="south_entry" to="west_exit" end="360000.00" vehsPerHour="21.00"/>
+    <flow id="flow_west_to_east" begin="0.00" from="west_entry" to="east_exit" end="360000.00" vehsPerHour="36.00"/>
+    <flow id="flow_west_to_north" begin="0.00" from="west_entry" to="north_exit" end="360000.00" vehsPerHour="339.01"/>
+    <flow id="flow_west_to_south" begin="0.00" from="west_entry" to="south_exit" end="360000.00" vehsPerHour="105.00"/>
+</routes>

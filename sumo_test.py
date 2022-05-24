@@ -2,28 +2,45 @@ import os, sys
 import pandas as pd
 import xml.etree.ElementTree as ET
 
+from pyparsing import col
+
 # if 'SUMO_HOME' in os.environ:
 #     tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
 #     sys.path.append(tools)
 # else:
 #     sys.exit("please declare environment variable 'SUMO_HOME'")
 
-traffic = tree = ET.parse('_sumo\\_config\\simplest_intersection_traffic.rou.xml')
+traffic = tree = ET.parse('C:\\sumoconfig\\real_intersection_traffic.rou.xml')
 root = traffic.getroot()
-children = root.getchildren()
+children = list(root)
+
+routes = list()
 
 for child in children:
     if 'flow' in child.attrib['id']:
-        print("flow")
+        routes.append(child.attrib['id'].replace("flow_",""))
 
+routes
 
+frame = pd.DataFrame(
+    columns=[
+        'approaching_cars',
+        'stopped_cars',
+        'average_speed',
+        'accumulated_waiting_time',
+        'new_throughput'
+    ],
+    index=routes
+).fillna(0).sort_index()
+frame.index.name = 'routes'
+frame
 # Running Sumo
 sys.path.append(os.path.join('c:', os.sep, 'Program Files (x86)', 'Eclipse', 'Sumo','tools'))
 sumoBinary = "C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo-gui"
 #sumoBinary = "C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo"
 
 # File to run
-sumoCmd = [sumoBinary, "-c", "_sumo\\_config\\simplest_intersection.sumocfg"]
+sumoCmd = [sumoBinary, "-c", "C:\\sumoconfig\\real_intersection.sumocfg"]
 
 
 import traci
@@ -34,6 +51,14 @@ traci.trafficlight.getCompleteRedYellowGreenDefinition(tlsID='intersection')
 traci.trafficlight.getRedYellowGreenState(tlsID='intersection')
 traci.trafficlight.setRedYellowGreenState(tlsID='intersection',state='GGrrGGrr')
 traci.trafficlight.setRedYellowGreenState(tlsID='intersection',state='rrGGrrGG')
+traci.trafficlight.setRedYellowGreenState(tlsID='intersection',state='rrrrrrrrrr')
+
+
+
+
+routes
+
+len(lista)
 
 traci.simulationStep()
 # Passed intersection
@@ -124,7 +149,27 @@ def collapseSimStateToObs(x):
 
     return pd.Series(data=output_dict)
 
-current_observations = vehicles_state.groupby('route').apply(lambda x: agg_func(x=x))
+routes = set()
+
+for item in traci.route.getIDList():
+    routes.add(item.split(".")[0].replace("!","").replace("flow_",""))
+
+empty_observations = pd.DataFrame(
+    columns=[
+        'approaching_cars',
+        'stopped_cars',
+        'average_speed',
+        'accumulated_waiting_time',
+        'new_throughput'
+    ],
+    index=routes
+).fillna(0).sort_index()
+empty_observations.index.name = 'routes'
+
+current_observations = vehicles_state.groupby('route').apply(lambda x: collapseSimStateToObs(x=x))
+empty_observations.update(current_observations)
+empty_observations.values.flatten().shape
+
 current_observations
 vehicles_state
 

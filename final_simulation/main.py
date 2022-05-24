@@ -1,7 +1,7 @@
 #import gym
 from stable_baselines3.common.env_checker import check_env
-from _env.simplest_intersection import SimplestIntersection, SimplestIntersection
-from _sumo.simplest_intersection_simulation import SignalStates, SumoSimulation
+from final_simulation._env.simplest_intersection import SimplestIntersection, SimplestIntersection
+from final_simulation._sumo.simplest_intersection_simulation import SignalStates, SumoSimulation
 from stable_baselines3 import PPO, DQN, A2C, DDPG
 from stable_baselines3.common.evaluation import evaluate_policy
 
@@ -9,7 +9,7 @@ from stable_baselines3.common.evaluation import evaluate_policy
 simulation = SumoSimulation(
     sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo",
     #sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo-gui",
-    sumo_config_path="C:\sumo_config\simplest_intersection.sumocfg",
+    sumo_config_path="C:\\sumoconfig\\real_intersection.sumocfg",
     signal_states=SignalStates
 )
 
@@ -20,16 +20,15 @@ train_env = SimplestIntersection(
     max_simulation_seconds=900
 )
 
-
 #region Train model
 
 model = PPO('MultiInputPolicy', train_env, learning_rate=1e-3,verbose=0,device='cuda')
 #model = DDPG('MultiInputPolicy', train_env, learning_rate=0.001,verbose=0,device='auto')
-model.learn(n_eval_episodes=10, total_timesteps=3600)
-#model.save("model_ppo_tts_3600_lr_1e-3_reward_02")
+model.learn(n_eval_episodes=10, total_timesteps=360000)
+model.save("model_ppo_tts_360000_lr_1e-3_reward_02_final_sim")
 #model.save("model_ddpg_tts_9000_lr_1e-3_reward_02a")
 #model = model.load("a2c_testing")
-train_env._simulation.endSimulation()
+#train_env._simulation.endSimulation()
 #endregion
 
 #region Test model

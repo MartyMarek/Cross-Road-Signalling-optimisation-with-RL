@@ -1,21 +1,21 @@
 #import gym
 from stable_baselines3.common.env_checker import check_env
-from _env.simplest_intersection import SimplestIntersection, SimplestIntersection2
-from _sumo.simplest_intersection_simulation import SignalStates, SumoSimulation
+from final_simulation._env.simplest_intersection import SimplestIntersection
+from final_simulation._sumo.simplest_intersection_simulation import SignalStates, SumoSimulation
 from stable_baselines3 import PPO, DQN, A2C, DDPG
 from stable_baselines3.common.evaluation import evaluate_policy
 
 # Define simulation
 simulation = SumoSimulation(
-    sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo",
-    #sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo-gui",
-    sumo_config_path="_sumo\\_config\\simplest_intersection.sumocfg",
+    #sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo",
+    sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo-gui",
+    sumo_config_path="C:\\sumoconfig\\real_intersection.sumocfg",
     signal_states=SignalStates
 )
 
 
 # Define environment
-train_env = SimplestIntersection2(
+train_env = SimplestIntersection(
     simulation=simulation,
     max_simulation_seconds=900
 )
@@ -27,14 +27,20 @@ train_env = SimplestIntersection2(
 
 
 #region Train model
-
+model = PPO('MultiInputPolicy',train_env,learning_rate=0.001,verbose=1)
+model = A2C.load("model_a2c_tts_90000_lr_1e-3_reward_02a.zip")
+model.learn(total_timesteps=3600)
+mean_reward, std_reward = evaluate_policy(model, train_env, n_eval_episodes=2, deterministic=True,)
+evalu = evaluate_policy(model, train_env, n_eval_episodes=2, deterministic=True, return_episode_rewards= True)
+model = DQN('MultiInputPolicy',train_env,learning_rate=0.001,verbose=1)
+model.learn(total_timesteps=3600)
 #model = PPO('MultiInputPolicy', train_env, learning_rate=1e-3,verbose=0,device='cuda')
 model = DDPG('MultiInputPolicy', train_env, learning_rate=0.001,verbose=0,device='auto')
 model.learn(n_eval_episodes=10)
 #model.save("model_ppo_tts_3600_lr_1e-3_reward_02")
 model.save("model_ddpg_tts_9000_lr_1e-3_reward_02a")
 #model = model.load("a2c_testing")
-train_env._simulation.endSimulation()
+
 #endregion
 
 #region Test model
@@ -68,8 +74,9 @@ while True:
 #endregion
 
 #region Test the environment
+simulation.beginSimulation()
 
-test_env = SimplestIntersection2(
+test_env = SimplestIntersection(
     simulation=simulation,
     max_simulation_seconds=900
 )

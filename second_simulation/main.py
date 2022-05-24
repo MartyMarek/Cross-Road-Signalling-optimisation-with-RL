@@ -2,27 +2,37 @@
 from stable_baselines3.common.env_checker import check_env
 from _env.simplest_intersection import SimplestIntersection
 from _sumo.simplest_intersection_simulation import SignalStates, SumoSimulation
-from stable_baselines3 import PPO, DQN, A2C
-#from stable_baselines3.common.evaluation import evaluate_policy
+from stable_baselines3 import PPO, DQN, A2C, TD3
+from stable_baselines3.common.evaluation import evaluate_policy
 import pandas as pd
 
 pd.options.display.width = 0
 
 # Define simulation
 simulation = SumoSimulation(
-    #sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo",
-    sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo-gui",
-    sumo_config_path="C:\sumo_config\simplest_intersection.sumocfg",
+    sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo",
+    #sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo-gui",
+    #sumo_config_path="C:\sumo_config\simplest_intersection.sumocfg",
+    sumo_config_path="_sumo\\_config\\simplest_intersection.sumocfg",
     signal_states=SignalStates
 )
 
-
 # Define environment
-train_env = SimplestIntersection(
+env = SimplestIntersection(
     simulation=simulation,
-    max_simulation_seconds=360000
+    max_simulation_seconds=900
 )
 
+# Define model
+model = PPO('MultiInputPolicy',env,learning_rate=0.001,verbose=1)
+model.learn(total_timesteps=3600)
+#model = A2C.load("model_a2c_tts_90000_lr_1e-3_reward_02a.zip")
+model
+# Evaluate the agent
+#mean_reward, std_reward = evaluate_policy(model, model.get_env(), n_eval_episodes=10)
+mean_reward, std_reward = evaluate_policy(model, env, n_eval_episodes=10)
+
+#region Old
 
 #region Train model
 
@@ -94,5 +104,7 @@ while not done:
     print("Goal reached!", "reward=", test_env._total_reward)
     break
 
+
+#endregion
 
 #endregion

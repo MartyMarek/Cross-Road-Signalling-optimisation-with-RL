@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2022-05-22 09:12:48 by Eclipse SUMO GUI Version 1.13.0
+<!-- generated on 2022-05-23 12:47:03 by Eclipse SUMO GUI Version 1.13.0
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
 
     <input>
@@ -10,14 +10,7 @@
     </input>
 
     <traci_server>
-        <remote-port value="60476"/>
+        <remote-port value="53394"/>
     </traci_server>
 
 </configuration>
--->
-
-<e3Detector xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/det_e3_file.xsd">
-   <interval begin="0.00" end="300.00" id="intersection_detector" meanTravelTime="3.28" meanOverlapTravelTime="3.74" meanSpeed="6.76" meanHaltsPerVehicle="0.11" meanTimeLoss="1.95" vehicleSum="236" meanSpeedWithin="5.97" meanHaltsPerVehicleWithin="0.20" meanDurationWithin="4.59" vehicleSumWithin="5" meanIntervalSpeedWithin="5.97" meanIntervalHaltsPerVehicleWithin="0.20" meanIntervalDurationWithin="4.59" meanTimeLossWithin="2.67"/>
-   <interval begin="300.00" end="600.00" id="intersection_detector" meanTravelTime="3.41" meanOverlapTravelTime="3.87" meanSpeed="6.82" meanHaltsPerVehicle="0.11" meanTimeLoss="2.11" vehicleSum="260" meanSpeedWithin="-1.00" meanHaltsPerVehicleWithin="-1.00" meanDurationWithin="-1.00" vehicleSumWithin="0" meanIntervalSpeedWithin="-1.00" meanIntervalHaltsPerVehicleWithin="-1.00" meanIntervalDurationWithin="-1.00" meanTimeLossWithin="-1.00"/>
-   <interval begin="600.00" end="900.00" id="intersection_detector" meanTravelTime="3.69" meanOverlapTravelTime="4.16" meanSpeed="5.86" meanHaltsPerVehicle="0.12" meanTimeLoss="2.31" vehicleSum="242" meanSpeedWithin="3.34" meanHaltsPerVehicleWithin="0.00" meanDurationWithin="3.48" vehicleSumWithin="4" meanIntervalSpeedWithin="3.34" meanIntervalHaltsPerVehicleWithin="0.00" meanIntervalDurationWithin="3.48" meanTimeLossWithin="1.50"/>
-</e3Detector>
