@@ -123,14 +123,31 @@ class SimplestIntersection(gym.Env):
         throughput = traffic['new_throughput'].sum()
         #reward = calculate_reward_01(throughput=throughput)
 
-        reward = calculate_reward_02(
+        # reward = calculate_reward_02(
+        #     throughput=traffic['new_throughput'].sum(),
+        #     cars_waiting=traffic['stopped_cars'].sum(),
+        #     current_signal_state=current_signal_state,
+        #     previous_signal_state=previous_signal_state,
+        #     previous_signal_active_time=previous_signal_active_time
+        # )
+
+        reward = calculate_reward_04(
             throughput=traffic['new_throughput'].sum(),
             cars_waiting=traffic['stopped_cars'].sum(),
+            accumulated_wait_time=traffic['accumulated_waiting_time'].sum(),
             current_signal_state=current_signal_state,
             previous_signal_state=previous_signal_state,
             previous_signal_active_time=previous_signal_active_time
         )
 
+        # reward = calculate_reward_05(
+        #     throughput=traffic['new_throughput'].sum(),
+        #     cars_waiting=traffic['stopped_cars'].sum(),
+        #     accumulated_wait_time=traffic['accumulated_waiting_time'].sum(),
+        #     current_signal_state=current_signal_state,
+        #     previous_signal_state=previous_signal_state,
+        #     previous_signal_active_time=previous_signal_active_time
+        # )
 
         # Optionally we can pass additional info, we are not using that for now
         info = {
@@ -138,7 +155,8 @@ class SimplestIntersection(gym.Env):
             "signal_state": current_signal_state,
             "previous_signal_state": previous_signal_state,
             "previous_signal_active_time": previous_signal_active_time,
-            "simulation_time":self._current_simulation_time
+            "simulation_time":self._current_simulation_time,
+            "reward": reward
         }
 
         ## Update values

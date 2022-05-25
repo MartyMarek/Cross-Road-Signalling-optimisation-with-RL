@@ -32,6 +32,11 @@ class SumoSimulation:
         self._previous_signal_active_time = 1
 
     def beginSimulation(self):
+        self._vehicles_state = pd.DataFrame() # Updated every step with the current state of all vehicles
+        self._vehicles_passed_intersection = set() # A set of vehicles that have passed the intersection
+        self._previous_signal_state = None
+        self._previous_signal_active_time = 1
+        
         traci.start(self._sumo_command)  # Need to press play in the GUI after this
 
         # Get a list of routes to build a standard observation frame
@@ -41,6 +46,11 @@ class SumoSimulation:
             self._routes.add(route.split(".")[0].replace("!","").replace("flow_",""))
 
     def endSimulation(self):
+        self._vehicles_state = pd.DataFrame() # Updated every step with the current state of all vehicles
+        self._vehicles_passed_intersection = set() # A set of vehicles that have passed the intersection
+        self._previous_signal_state = None
+        self._previous_signal_active_time = 1
+
         try:
             traci.close()
         except traci.exceptions.FatalTraCIError:

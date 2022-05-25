@@ -36,4 +36,42 @@ def calculate_reward_03(observations):
     return 1 / stopped_vehicles
 
 
+def calculate_reward_04(throughput, cars_waiting, accumulated_wait_time, current_signal_state, previous_signal_state,
+                        previous_signal_active_time):
 
+    throughput_reward = throughput * 3
+    waiting_cars_punishment = cars_waiting
+
+    if cars_waiting > 0:
+        average_wait_time = accumulated_wait_time/cars_waiting
+    else:
+        average_wait_time = 0
+
+    if current_signal_state != previous_signal_state and previous_signal_active_time < 5:
+        short_signal_punishment = 5
+    else:
+        short_signal_punishment = 0
+
+    reward = throughput_reward - waiting_cars_punishment - average_wait_time - short_signal_punishment
+
+    return reward
+
+def calculate_reward_05(throughput, cars_waiting, accumulated_wait_time, current_signal_state, previous_signal_state,
+                        previous_signal_active_time):
+
+    throughput_reward = throughput
+    waiting_cars_punishment = cars_waiting
+
+    if cars_waiting > 0:
+        average_wait_time = accumulated_wait_time/cars_waiting
+    else:
+        average_wait_time = 0
+
+    if current_signal_state != previous_signal_state and previous_signal_active_time < 5:
+        short_signal_punishment = 10
+    else:
+        short_signal_punishment = 0
+
+    reward = throughput_reward
+
+    return reward

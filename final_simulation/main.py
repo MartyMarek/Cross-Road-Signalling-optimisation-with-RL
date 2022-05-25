@@ -1,9 +1,60 @@
-#import gym
 from stable_baselines3.common.env_checker import check_env
 from final_simulation._env.simplest_intersection import SimplestIntersection, SimplestIntersection
 from final_simulation._sumo.simplest_intersection_simulation import SignalStates, SumoSimulation
-from stable_baselines3 import PPO, DQN, A2C, DDPG
+from stable_baselines3 import A2C, PPO, DQN
 from stable_baselines3.common.evaluation import evaluate_policy
+from stable_baselines3.common.monitor import Monitor
+from stable_baselines3.common.callbacks import EvalCallback
+import os
+
+
+#region Test With Wrapper
+
+# Create log dir
+log_dir = "final_simulation\\_models\\a2c_rew_04"
+os.makedirs(log_dir, exist_ok=True)
+
+# Sim time 1 minute
+max_simulation_seconds = 60
+
+# Define simulation
+simulation = SumoSimulation(
+    sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo",
+    #sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo-gui",
+    sumo_config_path="C:\\sumoconfig\\real_intersection.sumocfg",
+    signal_states=SignalStates
+)
+
+# Create and wrap the environment
+# Define environment
+env = SimplestIntersection(
+    simulation=simulation,
+    max_simulation_seconds=max_simulation_seconds
+)
+# Logs will be saved in log_dir/monitor.csv
+env = Monitor(env, log_dir)
+
+eval_simulation = SumoSimulation(
+    sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo",
+    #sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo-gui",
+    sumo_config_path="C:\\sumoconfig\\real_intersection.sumocfg",
+    signal_states=SignalStates
+)
+eval_env = SimplestIntersection(
+    simulation=eval_simulation,
+    max_simulation_seconds=max_simulation_seconds
+)
+eval_env = Monitor(eval_env, log_dir)
+
+
+# Create the callback: check every 1000 steps
+callback = EvalCallback(eval_env=eval_env,eval_freq=10,best_model_save_path=log_dir,n_eval_episodes=3,log_path=log_dir)
+#model = DQN('MultiInputPolicy', env, verbose=0, device='auto', train_freq=(10,'step'), learning_rate=0.01)
+model = A2C('MultiInputPolicy', env, verbose=0, device='auto', learning_rate=0.0001)
+# Train the agent
+model.learn(total_timesteps=int(max_simulation_seconds*10000), callback=callback)
+
+#endregion
 
 # Define simulation
 simulation = SumoSimulation(
