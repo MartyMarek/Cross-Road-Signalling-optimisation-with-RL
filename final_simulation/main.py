@@ -36,7 +36,7 @@ model.save("model_ppo_tts_360000_lr_1e-3_reward_02_final_sim")
 validation_simulation = SumoSimulation(
     #sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo",
     sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo-gui",
-    sumo_config_path="C:\sumo_config\simplest_intersection.sumocfg",
+    sumo_config_path="C:\\sumoconfig\\real_intersection.sumocfg",
     signal_states=SignalStates
 )
 
