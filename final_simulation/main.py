@@ -11,11 +11,12 @@ import os
 #region Test With Wrapper
 
 # Create log dir
-log_dir = "final_simulation\\_models\\a2c_rew_04"
+log_dir = "final_simulation\\_models\\dqn_rew_04_el_180_lr_0.0001"
 os.makedirs(log_dir, exist_ok=True)
 
 # Sim time 1 minute
-max_simulation_seconds = 60
+max_simulation_seconds = 180
+number_episodes = 10000
 
 # Define simulation
 simulation = SumoSimulation(
@@ -48,11 +49,12 @@ eval_env = Monitor(eval_env, log_dir)
 
 
 # Create the callback: check every 1000 steps
-callback = EvalCallback(eval_env=eval_env,eval_freq=10,best_model_save_path=log_dir,n_eval_episodes=3,log_path=log_dir)
-#model = DQN('MultiInputPolicy', env, verbose=0, device='auto', train_freq=(10,'step'), learning_rate=0.01)
-model = A2C('MultiInputPolicy', env, verbose=0, device='auto', learning_rate=0.0001)
+callback = EvalCallback(eval_env=eval_env,eval_freq=10*max_simulation_seconds,best_model_save_path=log_dir,n_eval_episodes=1,log_path=log_dir)
+model = DQN('MultiInputPolicy', env, verbose=0, device='auto', train_freq=(10,'step'), learning_rate=0.0001)
+#model = PPO('MultiInputPolicy', env, verbose=0, device='auto', learning_rate=0.0001)
+#model = A2C('MultiInputPolicy', env, verbose=0, device='auto', learning_rate=0.1)
 # Train the agent
-model.learn(total_timesteps=int(max_simulation_seconds*10000), callback=callback)
+model.learn(total_timesteps=int(max_simulation_seconds*number_episodes), callback=callback)
 
 #endregion
 
@@ -96,6 +98,8 @@ validation_env = SimplestIntersection(
     max_simulation_seconds=900
 )
 observation = validation_env.reset()
+
+model = A2C.load("final_simulation\\_models\\a2c_rew_04\\best_model.zip")
 
 while True:
     #observation = observation[np.newaxis, ...]

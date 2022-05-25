@@ -68,10 +68,10 @@ def calculate_reward_05(throughput, cars_waiting, accumulated_wait_time, current
         average_wait_time = 0
 
     if current_signal_state != previous_signal_state and previous_signal_active_time < 5:
-        short_signal_punishment = 10
+        short_signal_punishment = 1
     else:
         short_signal_punishment = 0
 
-    reward = throughput_reward
+    reward = (throughput_reward * 50) - (waiting_cars_punishment * 10) - (average_wait_time * 1) - (short_signal_punishment * 100)
 
     return reward
