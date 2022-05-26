@@ -1,3 +1,4 @@
+from tabnanny import verbose
 from stable_baselines3.common.env_checker import check_env
 from final_simulation._env.simplest_intersection import SimplestIntersection, SimplestIntersection
 from final_simulation._sumo.simplest_intersection_simulation import SignalStates, SumoSimulation
@@ -11,12 +12,14 @@ import os
 #region Test With Wrapper
 
 # Create log dir
-log_dir = "final_simulation\\_models\\dqn_rew_04_el_180_lr_0.0001"
+log_dir = "final_simulation\\_models\\ppo_rew_06_el_180_lr_0.1"
+eval_log_dir = log_dir + "\\eval"
 os.makedirs(log_dir, exist_ok=True)
+os.makedirs(eval_log_dir, exist_ok=True)
 
 # Sim time 1 minute
 max_simulation_seconds = 180
-number_episodes = 10000
+number_episodes = 1000
 
 # Define simulation
 simulation = SumoSimulation(
@@ -45,17 +48,17 @@ eval_env = SimplestIntersection(
     simulation=eval_simulation,
     max_simulation_seconds=max_simulation_seconds
 )
-eval_env = Monitor(eval_env, log_dir)
+eval_env = Monitor(eval_env, eval_log_dir)
 
 
 # Create the callback: check every 1000 steps
-callback = EvalCallback(eval_env=eval_env,eval_freq=10*max_simulation_seconds,best_model_save_path=log_dir,n_eval_episodes=1,log_path=log_dir)
-model = DQN('MultiInputPolicy', env, verbose=0, device='auto', train_freq=(10,'step'), learning_rate=0.0001)
-#model = PPO('MultiInputPolicy', env, verbose=0, device='auto', learning_rate=0.0001)
-#model = A2C('MultiInputPolicy', env, verbose=0, device='auto', learning_rate=0.1)
+callback = EvalCallback(eval_env=eval_env,eval_freq=max_simulation_seconds*5,best_model_save_path=log_dir,n_eval_episodes=1,log_path=eval_log_dir)
+#model = DQN('MultiInputPolicy', env, verbose=0, device='auto', train_freq=(10,'step'), learning_rate=0.1, exploration_initial_eps=1, exploration_final_eps=0.01, verbose=1)
+model = PPO('MultiInputPolicy', env, verbose=1, device='auto', learning_rate=0.0001)
+#model = A2C('MultiInputPolicy', env, verbose=0, device='auto', learning_rate=0.1, verbose=1)
 # Train the agent
 model.learn(total_timesteps=int(max_simulation_seconds*number_episodes), callback=callback)
-
+model.save("final_simulation\\_models\\best\\reward_06_ppo")
 #endregion
 
 # Define simulation
@@ -95,11 +98,12 @@ validation_simulation = SumoSimulation(
 
 validation_env = SimplestIntersection(
     simulation=validation_simulation,
-    max_simulation_seconds=900
+    max_simulation_seconds=180
 )
 observation = validation_env.reset()
+validation_env._simulation.endSimulation()
 
-model = A2C.load("final_simulation\\_models\\a2c_rew_04\\best_model.zip")
+#model = A2C.load("final_simulation\\_models\\a2c_rew_04\\best_model.zip")
 
 while True:
     #observation = observation[np.newaxis, ...]

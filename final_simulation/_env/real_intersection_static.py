@@ -1,17 +1,13 @@
-from this import d
 import gym
 from gym.spaces import Discrete, Box, Dict
 import pandas as pd
 import numpy as np
-from enum import Enum
-import random
-import traci
 from final_simulation._sumo.simplest_intersection_simulation import SumoSimulation
 from final_simulation._env.reward import *
 from final_simulation.datastore import *
 
 
-class SimplestIntersection(gym.Env):
+class RealIntersectionStatic(gym.Env):
     """
     Custom Environment that follows gym interface.
     Implementing the simplest intersection. 
@@ -24,7 +20,7 @@ class SimplestIntersection(gym.Env):
 
     def __init__(self,simulation: SumoSimulation,max_simulation_seconds):
 
-        super(SimplestIntersection, self).__init__()
+        super(RealIntersectionStatic, self).__init__()
 
         # SUMO Setup
         self._simulation = simulation
@@ -95,17 +91,21 @@ class SimplestIntersection(gym.Env):
 
         return observations
 
-    def step(self, action):
+    def step(self,dummy_action):
         
         # Step SUMO
-        self._simulation.changeSignalState(action=action) # Getting an error
+        #self._simulation.changeSignalState(action=action) # Getting an error
         self._simulation.stepSimulation()
+
+        
 
         # Increment the time step
         self._current_time_step += 1
         self._current_simulation_time = self._simulation.getSimulationTime()
 
         traffic,current_signal_state,previous_signal_state,previous_signal_active_time = self._simulation.getCurrentObservations()
+
+        action = current_signal_state
 
         # save the observation to a datastore
         traffic_record = traffic.values.flatten()
@@ -149,16 +149,7 @@ class SimplestIntersection(gym.Env):
         #     previous_signal_active_time=previous_signal_active_time
         # )
 
-        # reward = calculate_reward_06(
-        #     throughput=traffic['new_throughput'].sum(),
-        #     cars_waiting=traffic['stopped_cars'].sum(),
-        #     accumulated_wait_time=traffic['accumulated_waiting_time'].sum(),
-        #     current_signal_state=current_signal_state,
-        #     previous_signal_state=previous_signal_state,
-        #     previous_signal_active_time=previous_signal_active_time
-        # )
-
-        reward = calculate_reward_07(
+        reward = calculate_reward_06(
             throughput=traffic['new_throughput'].sum(),
             cars_waiting=traffic['stopped_cars'].sum(),
             accumulated_wait_time=traffic['accumulated_waiting_time'].sum(),

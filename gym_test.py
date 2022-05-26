@@ -13,7 +13,6 @@ simulation = SumoSimulation(
     signal_states=SignalStates
 )
 
-
 # Define environment
 train_env = SimplestIntersection(
     simulation=simulation,
