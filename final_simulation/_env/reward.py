@@ -131,3 +131,54 @@ def calculate_reward_07(throughput, cars_waiting, accumulated_wait_time, current
     reward = throughput_reward - average_wait_time - short_signal_punishment - long_signal_punishment
 
     return reward
+
+def calculate_reward_08(throughput, cars_waiting, accumulated_wait_time, current_signal_state, previous_signal_state,
+                        previous_signal_active_time):
+
+
+    if cars_waiting > 0:
+        average_wait_time_punishment = (accumulated_wait_time/cars_waiting) * 0.5
+    else:
+        average_wait_time_punishment = 0
+
+    if current_signal_state != previous_signal_state and previous_signal_active_time < 5:
+        short_signal_punishment = 20
+    else:
+        short_signal_punishment = 0
+
+    if current_signal_state == previous_signal_state and previous_signal_active_time > 20:
+        long_signal_punishment = 2
+    else:
+        long_signal_punishment = 0
+
+    throughput_reward = throughput * 10
+
+    reward = throughput_reward - average_wait_time_punishment - short_signal_punishment - long_signal_punishment
+
+    return reward
+
+
+def calculate_reward_09(throughput, cars_waiting, accumulated_wait_time, current_signal_state, previous_signal_state,
+                        previous_signal_active_time):
+
+    if cars_waiting > 0:
+        average_wait_time_punishment = (accumulated_wait_time/cars_waiting) * 0.5
+    else:
+        average_wait_time_punishment = 0
+
+    if current_signal_state != previous_signal_state and previous_signal_active_time < 5:
+        short_signal_punishment = 20
+    else:
+        short_signal_punishment = 0
+
+    if current_signal_state == previous_signal_state and previous_signal_active_time > 25:
+        long_signal_punishment = 20
+    else:
+        long_signal_punishment = 0
+
+    throughput_reward = throughput * 5
+    cars_waiting_punishment = cars_waiting
+
+    reward = throughput_reward - cars_waiting_punishment - short_signal_punishment - long_signal_punishment
+
+    return reward

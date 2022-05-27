@@ -23,7 +23,7 @@ train_env = SimplestIntersection(
 #     simulation=simulation,
 #     max_simulation_seconds=100
 # )
-
+SignalStates(0).name.replace('r','')[0] == 'g'
 
 #region Train model
 model = PPO('MultiInputPolicy',train_env,learning_rate=0.001,verbose=1)

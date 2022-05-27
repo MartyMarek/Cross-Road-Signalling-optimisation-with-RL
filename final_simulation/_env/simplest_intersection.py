@@ -158,7 +158,16 @@ class SimplestIntersection(gym.Env):
         #     previous_signal_active_time=previous_signal_active_time
         # )
 
-        reward = calculate_reward_07(
+        # reward = calculate_reward_07(
+        #     throughput=traffic['new_throughput'].sum(),
+        #     cars_waiting=traffic['stopped_cars'].sum(),
+        #     accumulated_wait_time=traffic['accumulated_waiting_time'].sum(),
+        #     current_signal_state=current_signal_state,
+        #     previous_signal_state=previous_signal_state,
+        #     previous_signal_active_time=previous_signal_active_time
+        # )
+
+        reward = calculate_reward_08(
             throughput=traffic['new_throughput'].sum(),
             cars_waiting=traffic['stopped_cars'].sum(),
             accumulated_wait_time=traffic['accumulated_waiting_time'].sum(),
