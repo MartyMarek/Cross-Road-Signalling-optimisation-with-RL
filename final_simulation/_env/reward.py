@@ -1,4 +1,6 @@
 
+def qlearning_reward_01(observation):
+    return observation[8]
 
 def calculate_reward_01(throughput):
     reward = float(throughput * 10)
