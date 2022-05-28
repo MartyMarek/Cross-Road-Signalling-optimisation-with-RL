@@ -28,7 +28,7 @@ max_epsilon = 1
 min_epsilon = 0.01
 decay = 0.01
 
-train_episodes = 1000
+train_episodes = 100
 test_episodes = 100
 max_steps = 100
 
@@ -42,6 +42,8 @@ for episode in range(train_episodes):
 
     currentState = env.reset()
     total_rewards  = 0
+
+    print("Training episode", episode+1)
 
     for step in range(100):
         # generate random number between 0 and 1
@@ -75,6 +77,7 @@ for episode in range(train_episodes):
         if done == True:
             print("Total reward {}: {}".format(episode, total_rewards))
             break
+
 
     # reduce the epsilon after each episode to reduce exploration and move towards explotation
     epsilon = min_epsilon + (max_epsilon - min_epsilon) * np.exp(-decay * episode)

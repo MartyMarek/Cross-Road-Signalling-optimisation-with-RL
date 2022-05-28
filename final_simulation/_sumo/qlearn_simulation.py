@@ -45,69 +45,21 @@ class SumoSimulation:
         self._previous_signal_state = None
         self._previous_signal_active_time = 1
 
-    def categorise(self, data):
-
-        # get vehicles travelling horizontally and vertically
-        horizontalList = data[data['vehicle_id'].str.contains('north_to_south|north_to_east|south_to_north|south_to_west')]
-        horizontalTurnRightList = data[data['vehicle_id'].str.contains('north_to_west|south_to_east')]
-        verticalList = data[data['vehicle_id'].str.contains('west_to_east|west_to_north|east_to_west|east_to_south')]
-        verticalTurnRightList = data[data['vehicle_id'].str.contains('west_to_south|east_to_north')]
-
-        # binning the number of vehicles
-        horizontal = self.binVehicles(len(horizontalList.index))
-        horizontalRight = self.binVehicles(len(horizontalTurnRightList.index))
-        vertical = self.binVehicles(len(verticalList.index))
-        verticalRight = self.binVehicles(len(verticalTurnRightList.index))
-
-        # get the total wait time for all vehicles
-        horizontalTotalTime = self.binAccumulatedWaitTime(horizontalList['accumulated_waiting_time'].sum())
-        horizontalRightTotalTime = self.binAccumulatedWaitTime(horizontalTurnRightList['accumulated_waiting_time'].sum())
-        verticalTotalTime = self.binAccumulatedWaitTime(verticalList['accumulated_waiting_time'].sum())
-        verticalRightTotalTime = self.binAccumulatedWaitTime(verticalTurnRightList['accumulated_waiting_time'].sum())
-
-        # create an array with the results
-        return [horizontal, horizontalRight, vertical, verticalRight, horizontalTotalTime,
-                         horizontalRightTotalTime, verticalTotalTime, verticalRightTotalTime]
-
-
-
-    def binAccumulatedWaitTime(self, waitTime):
-        if waitTime < 60:
-            return 0
-        elif waitTime < 120:
-            return 1
-        elif waitTime < 180:
-            return 2
-        elif waitTime < 240:
-            return 3
-        elif waitTime < 300:
-            return 4
-        else:
-            return 5
-
-    def binVehicles(self, vehicles):
-        if vehicles < 3:
-            return 0
-        elif vehicles < 6:
-            return 1
-        elif vehicles < 9:
-            return 2
-        elif vehicles < 12:
-            return 3
-        elif vehicles < 15:
-            return 4
-        else:
-            return 5
 
 
     def beginSimulation(self):
-        traci.start(self._sumo_command)  # Need to press play in the GUI after this
+        traci.start(self._sumo_command)
 
     def endSimulation(self):
         try:
             traci.close()
         except traci.exceptions.FatalTraCIError:
             print("No simulation running.")
+
+        self.vehiclesPast.clear()
+        self.vehiclesPastHistory.clear()
+        self.allVehicles.clear()
+        self.newVehicles.clear()
 
     def getSimulationTime(self):
 
@@ -227,4 +179,58 @@ class SumoSimulation:
         signal_string = self._signal_states(action).name
         traci.trafficlight.setRedYellowGreenState('intersection', signal_string)
 
+
+    def categorise(self, data):
+
+        # get vehicles travelling horizontally and vertically
+        horizontalList = data[data['vehicle_id'].str.contains('north_to_south|north_to_east|south_to_north|south_to_west')]
+        horizontalTurnRightList = data[data['vehicle_id'].str.contains('north_to_west|south_to_east')]
+        verticalList = data[data['vehicle_id'].str.contains('west_to_east|west_to_north|east_to_west|east_to_south')]
+        verticalTurnRightList = data[data['vehicle_id'].str.contains('west_to_south|east_to_north')]
+
+        # binning the number of vehicles
+        horizontal = self.binVehicles(len(horizontalList.index))
+        horizontalRight = self.binVehicles(len(horizontalTurnRightList.index))
+        vertical = self.binVehicles(len(verticalList.index))
+        verticalRight = self.binVehicles(len(verticalTurnRightList.index))
+
+        # get the total wait time for all vehicles
+        horizontalTotalTime = self.binAccumulatedWaitTime(horizontalList['accumulated_waiting_time'].sum())
+        horizontalRightTotalTime = self.binAccumulatedWaitTime(horizontalTurnRightList['accumulated_waiting_time'].sum())
+        verticalTotalTime = self.binAccumulatedWaitTime(verticalList['accumulated_waiting_time'].sum())
+        verticalRightTotalTime = self.binAccumulatedWaitTime(verticalTurnRightList['accumulated_waiting_time'].sum())
+
+        # create an array with the results
+        return [horizontal, horizontalRight, vertical, verticalRight, horizontalTotalTime,
+                         horizontalRightTotalTime, verticalTotalTime, verticalRightTotalTime]
+
+
+
+    def binAccumulatedWaitTime(self, waitTime):
+        if waitTime < 60:
+            return 0
+        elif waitTime < 120:
+            return 1
+        elif waitTime < 180:
+            return 2
+        elif waitTime < 240:
+            return 3
+        elif waitTime < 300:
+            return 4
+        else:
+            return 5
+
+    def binVehicles(self, vehicles):
+        if vehicles < 3:
+            return 0
+        elif vehicles < 6:
+            return 1
+        elif vehicles < 9:
+            return 2
+        elif vehicles < 12:
+            return 3
+        elif vehicles < 15:
+            return 4
+        else:
+            return 5
 
