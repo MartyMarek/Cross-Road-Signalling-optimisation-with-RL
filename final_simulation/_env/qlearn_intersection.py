@@ -86,7 +86,7 @@ class SimplestIntersection(gym.Env):
 
         observation = self._simulation.getCurrentObservations()
 
-        reward = qlearning_reward_01(observation)
+        reward = qlearning_reward_03(observation)
 
         throughput = observation[8]
 

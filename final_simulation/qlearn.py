@@ -1,6 +1,8 @@
 import random
 import gym
 import numpy as np
+import pandas as pd
+
 from _env.qlearn_intersection import SimplestIntersection
 from _sumo.qlearn_simulation import SignalStates, SumoSimulation
 
@@ -15,7 +17,7 @@ simulation = SumoSimulation(
 
 env = SimplestIntersection(
     simulation=simulation,
-    max_simulation_seconds=180
+    max_simulation_seconds=120
 )
 
 
@@ -26,9 +28,9 @@ discount = 0.9
 epsilon = 1
 max_epsilon = 1
 min_epsilon = 0.01
-decay = 0.01
+decay = 0.0001
 
-train_episodes = 100
+train_episodes = 10000
 test_episodes = 100
 max_steps = 100
 
@@ -43,9 +45,9 @@ for episode in range(train_episodes):
     currentState = env.reset()
     total_rewards  = 0
 
-    print("Training episode", episode+1)
+    print("Training episode:", episode)
 
-    for step in range(100):
+    for step in range(120):
         # generate random number between 0 and 1
         nextStep = random.uniform(0, 1)
 
@@ -75,7 +77,7 @@ for episode in range(train_episodes):
 
         # if the episode is finished
         if done == True:
-            print("Total reward {}: {}".format(episode, total_rewards))
+            print("Total reward {}: {}, Epsilon: {}".format(episode, total_rewards, epsilon))
             break
 
 
@@ -85,6 +87,8 @@ for episode in range(train_episodes):
     rewards.append(total_rewards)
     epsilons.append(epsilon)
 
+    #print("Reward: {}, Next Epsilon: {}".format(total_rewards, epsilon))
+
 
 # once all episodes are done
 epsilon = min_epsilon + (max_epsilon - min_epsilon) * np.exp(-decay * episode)
@@ -92,3 +96,8 @@ rewards.append(total_rewards)
 epsilons.append(epsilon)
 
 print("Average Score for this run: " + str(sum(rewards)/train_episodes))
+
+saveData = {'Rewards':rewards, 'Epsilon':epsilons}
+df = pd.DataFrame(saveData)
+
+df.to_csv("rewards-epsilons.csv")

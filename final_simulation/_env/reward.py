@@ -1,6 +1,63 @@
 
 def qlearning_reward_01(observation):
-    return observation[8]
+    hVehiclesWaiting = observation[0]
+    hRightVehiclesWaiting = observation[1]
+    vVehiclesWaiting = observation[2]
+    vRightVehiclesWaiting = observation[3]
+    hTotalTime = observation[4]
+    hRightTotalTime = observation[5]
+    vTotalTime = observation[6]
+    vRightTotalTime = observation[7]
+    throughput = observation[8]
+    lightState = observation[9]
+
+    throughputRatio = throughput - hVehiclesWaiting - hRightVehiclesWaiting - vVehiclesWaiting - vRightVehiclesWaiting
+
+    if  throughputRatio < 0:
+        return abs(1/throughputRatio)
+    else:
+        return throughputRatio
+
+def qlearning_reward_02(observation):
+    hVehiclesWaiting = observation[0]
+    hRightVehiclesWaiting = observation[1]
+    vVehiclesWaiting = observation[2]
+    vRightVehiclesWaiting = observation[3]
+    hTotalTime = observation[4]
+    hRightTotalTime = observation[5]
+    vTotalTime = observation[6]
+    vRightTotalTime = observation[7]
+    throughput = observation[8]
+    lightState = observation[9]
+
+    totalWaitTime = hTotalTime + hRightTotalTime + vTotalTime + vRightTotalTime
+
+    if totalWaitTime == 0:
+        return 1
+    else:
+        return 1 / totalWaitTime
+
+def qlearning_reward_03(observation):
+    hVehiclesWaiting = observation[0]
+    hRightVehiclesWaiting = observation[1]
+    vVehiclesWaiting = observation[2]
+    vRightVehiclesWaiting = observation[3]
+    hTotalTime = observation[4]
+    hRightTotalTime = observation[5]
+    vTotalTime = observation[6]
+    vRightTotalTime = observation[7]
+    throughput = observation[8]
+    lightState = observation[9]
+
+    totalWaitTime = hTotalTime + hRightTotalTime + vTotalTime + vRightTotalTime
+
+    throughputReward = throughput / 10
+
+    if totalWaitTime == 0:
+        return 1 + throughputReward
+    else:
+        return (1 / totalWaitTime) + throughputReward
+
 
 def calculate_reward_01(throughput):
     reward = float(throughput * 10)
