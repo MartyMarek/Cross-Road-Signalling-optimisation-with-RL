@@ -63,9 +63,10 @@ for episode in range(train_episodes):
         # take the action and receive the reward
         obsState, reward, done = env.step(nextAction)
 
-        nextState = obsState[0] + obsState[1] * 6 + obsState[2] * 6^2 + obsState[3] * 6^3 + obsState[4] * 6^4 + \
-                    obsState[5] * 6^5 + obsState[6] * 6^6 + obsState[7] * 6^7 + obsState[8] * 6^8 + \
-                    + obsState[9] * 6^8 * 8
+        # encode the observation state into a single integer
+        nextState = obsState[0] + obsState[1] * 4 + obsState[2] * 4^2 + obsState[3] * 4^3 + obsState[4] * 4^4 + \
+                    obsState[5] * 4^5 + obsState[6] * 4^6 + obsState[7] * 4^7 + obsState[8] * 4^8 + \
+                    + obsState[9] * 4^8 * 8 + obsState[10] * 4^9 * 8
 
         # update Q table
         q_table[currentState, nextAction] = q_table[currentState, nextAction] + \

@@ -1,0 +1,10 @@
+alpha = 0.001
+discount = 0.9
+epsilon = 1
+max_epsilon = 1
+min_epsilon = 0.01
+decay = 0.0001
+
+train_episodes = 10000
+test_episodes = 100
+max_steps = 100
