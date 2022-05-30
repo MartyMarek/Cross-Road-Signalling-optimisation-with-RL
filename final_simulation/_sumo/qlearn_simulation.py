@@ -48,9 +48,13 @@ class SumoSimulation:
 
 
     def beginSimulation(self):
+        self._previous_signal_state = None
+        self._previous_signal_active_time = 1
         traci.start(self._sumo_command)
 
     def endSimulation(self):
+        self._previous_signal_state = None
+        self._previous_signal_active_time = 1
         try:
             traci.close()
         except traci.exceptions.FatalTraCIError:
@@ -150,7 +154,23 @@ class SumoSimulation:
 
         # get the traffic light state space
         lightStateString = traci.trafficlight.getRedYellowGreenState('intersection')
-        lightState = self._signal_states[lightStateString].value
+        current_signal_state = self._signal_states[lightStateString].value
+
+        # Get the previous signal state
+        previous_signal_state = self._previous_signal_state
+        if not previous_signal_state:
+            previous_signal_state = current_signal_state
+        # Update previous signal state with current signal
+        self._previous_signal_state = current_signal_state
+        # Get previous signal active time
+        previous_signal_active_time = self._previous_signal_active_time
+        # Increase the previous signal active time by 1
+        if current_signal_state == previous_signal_state:
+            self._previous_signal_active_time += 1
+        else:
+            self._previous_signal_active_time = 1
+
+        lightStatusTime = self.binLightStatusTime(self._previous_signal_active_time)
 
         # throughput - is now only the number of cars that have passed the intersection on this turn
         throughput = self.binVehicles(len(self.vehiclesPast))
@@ -159,7 +179,9 @@ class SumoSimulation:
         observation.append(throughput)
 
         # add lightState to observation
-        observation.append(lightState)
+        observation.append(current_signal_state)
+        observation.append(lightStatusTime)
+
 
         # add the newly arrived vehicles to the allvehicles list so next turn they are counted
         self.allVehicles.update(self.newVehicles)
@@ -183,10 +205,10 @@ class SumoSimulation:
     def categorise(self, data):
 
         # get vehicles travelling horizontally and vertically
-        horizontalList = data[data['vehicle_id'].str.contains('north_to_south|north_to_east|south_to_north|south_to_west')]
-        horizontalTurnRightList = data[data['vehicle_id'].str.contains('north_to_west|south_to_east')]
-        verticalList = data[data['vehicle_id'].str.contains('west_to_east|west_to_north|east_to_west|east_to_south')]
-        verticalTurnRightList = data[data['vehicle_id'].str.contains('west_to_south|east_to_north')]
+        verticalList = data[data['vehicle_id'].str.contains('north_to_south|north_to_east|south_to_north|south_to_west')]
+        verticalTurnRightList = data[data['vehicle_id'].str.contains('north_to_west|south_to_east')]
+        horizontalList = data[data['vehicle_id'].str.contains('west_to_east|west_to_north|east_to_west|east_to_south')]
+        horizontalTurnRightList = data[data['vehicle_id'].str.contains('west_to_south|east_to_north')]
 
         # binning the number of vehicles
         horizontal = self.binVehicles(len(horizontalList.index))
@@ -205,20 +227,25 @@ class SumoSimulation:
                          horizontalRightTotalTime, verticalTotalTime, verticalRightTotalTime]
 
 
+    def binLightStatusTime(self, statusTime):
+        if statusTime < 4:
+            return 0
+        elif statusTime < 10:
+            return 1
+        elif statusTime < 15:
+            return 2
+        else:
+            return 3
 
     def binAccumulatedWaitTime(self, waitTime):
-        if waitTime < 60:
+        if waitTime < 30:
             return 0
-        elif waitTime < 120:
+        elif waitTime < 60:
             return 1
-        elif waitTime < 180:
+        elif waitTime < 120:
             return 2
-        elif waitTime < 240:
-            return 3
-        elif waitTime < 300:
-            return 4
         else:
-            return 5
+            return 3
 
     def binVehicles(self, vehicles):
         if vehicles < 3:
@@ -227,10 +254,6 @@ class SumoSimulation:
             return 1
         elif vehicles < 9:
             return 2
-        elif vehicles < 12:
-            return 3
-        elif vehicles < 15:
-            return 4
         else:
-            return 5
+            return 3
 

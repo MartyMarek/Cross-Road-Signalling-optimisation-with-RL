@@ -32,7 +32,7 @@ class SimplestIntersection(gym.Env):
 
         #self.observation_space = np.zeros((77,), dtype='int64')
         #obs_array = np.array([77])
-        self.observation_space = 81000000
+        self.observation_space = 2100000
 
         # Reset counters
         self._current_time_step = 1
@@ -86,7 +86,7 @@ class SimplestIntersection(gym.Env):
 
         observation = self._simulation.getCurrentObservations()
 
-        reward = qlearning_reward_03(observation)
+        reward = qlearning_reward_04(observation)
 
         throughput = observation[8]
 

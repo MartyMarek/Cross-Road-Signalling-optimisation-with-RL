@@ -61,6 +61,49 @@ def qlearning_reward_03(observation):
         return (1 / totalWaitTime) + throughputReward
 
 
+
+def qlearning_reward_04(observation):
+    hVehiclesWaiting = observation[0]
+    hRightVehiclesWaiting = observation[1]
+    vVehiclesWaiting = observation[2]
+    vRightVehiclesWaiting = observation[3]
+    hTotalTime = observation[4]
+    hRightTotalTime = observation[5]
+    vTotalTime = observation[6]
+    vRightTotalTime = observation[7]
+    throughput = observation[8]
+    lightState = observation[9]
+    lightStatusTime = observation[10]
+
+    reward = 0
+
+    # we don't want the lights to be orange for too long
+    if lightState == 1 or lightState == 3 or lightState == 5 or lightState == 7:
+        if lightStatusTime >= 1:
+            reward = reward - 5
+
+    # if the horizontal lights are green..
+    if lightState == 6:
+        reward = reward + (hVehiclesWaiting - hRightTotalTime - vTotalTime - vRightTotalTime)
+
+    # if vertical lights are green
+    if lightState == 2:
+        reward = reward + (vVehiclesWaiting - vRightTotalTime - hTotalTime - hRightTotalTime)
+
+    # if horizontal right turn lights are green
+    if lightState == 4:
+        reward = reward + hRightVehiclesWaiting - hTotalTime - vTotalTime - vRightTotalTime
+
+    # if vertical right turn lights are green
+    if lightState == 0:
+        reward = reward + vRightVehiclesWaiting - vTotalTime - hTotalTime - hRightTotalTime
+
+    reward = reward + throughput
+
+    return reward
+
+
+
 def calculate_reward_01(throughput):
     reward = float(throughput * 10)
 
