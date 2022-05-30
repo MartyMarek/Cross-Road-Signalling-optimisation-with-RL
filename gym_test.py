@@ -1,9 +1,79 @@
 #import gym
 from stable_baselines3.common.env_checker import check_env
 from final_simulation._env.simplest_intersection import SimplestIntersection
-from final_simulation._sumo.simplest_intersection_simulation import SignalStates, SumoSimulation
+from final_simulation._env.real_intersection import RealIntersectionSimpleObs12
+from final_simulation._sumo.simplest_intersection_simulation import SignalStates, SumoSimulation, SumoSimulationSimpleObs
 from stable_baselines3 import PPO, DQN, A2C, DDPG
 from stable_baselines3.common.evaluation import evaluate_policy
+import numpy as np
+
+#region Simple Simulation Test
+
+simulation = SumoSimulationSimpleObs(
+    sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo",
+    #sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo-gui",
+    sumo_config_path="C:\\sumoconfig\\real_intersection.sumocfg",
+    signal_states=SignalStates
+)
+test_env = RealIntersectionSimpleObs12(
+    simulation=simulation,
+    max_simulation_seconds=900
+)
+# Validate the environment
+check_env(test_env, warn=True)
+
+simulation.beginSimulation()
+
+
+simulation.stepSimulation()
+traffic,throughput,current_signal_state,previous_signal_state,previous_signal_active_time = simulation.getCurrentObservations()
+observations = np.append(traffic.to_numpy(dtype=np.int64),np.array([throughput,current_signal_state,previous_signal_state,previous_signal_active_time],dtype=np.int64))
+
+np.digitize(current_signal_state,signals_bins) - 1
+
+stopped_cars_bins = np.array([0,4,10,20,np.inf])
+throughput_bins = np.array([0,2,6,12,np.inf])
+signals_bins = np.arange(0,8)
+signal_timer_bins = np.array([0,5,10,15,20,25,np.inf])
+
+bins = [
+    # Stopped cars from each cardinal direction
+    stopped_cars_bins,
+    stopped_cars_bins,
+    stopped_cars_bins,
+    stopped_cars_bins,
+    # Throughput
+    throughput_bins,
+    # Current signal state
+    signals_bins,
+    # Previous signal state
+    signals_bins,
+    # Previous signal active time
+    signal_timer_bins
+]
+
+def discretise_observations(observations,bins):
+    discrete_observations = list()
+    for i in range(len(observations)):
+        discrete_observations.append(np.digitize(observations[i], bins[i]) - 1) # -1 will turn bin into index
+    return tuple(discrete_observations)
+
+observations
+discretise_observations(observations=observations,bins=bins)
+
+obsSpaceSize = len(env.observation_space.high)
+np.linspace(0,7,8)
+np.digitize(observations[0],stopped_cars_bins) - 1
+def discretize_state(state, bins, obsSpaceSize):
+    stateIndex = []
+    for i in range(obsSpaceSize):
+        stateIndex.append(np.digitize(state[i], bins[i]) - 1) # -1 will turn bin into index
+    return tuple(stateIndex)
+
+
+
+
+#endregion
 
 # Define simulation
 simulation = SumoSimulation(
@@ -14,9 +84,9 @@ simulation = SumoSimulation(
 )
 
 # Define environment
-train_env = SimplestIntersection(
+train_env = RealIntersectionSimpleObs12(
     simulation=simulation,
-    max_simulation_seconds=900
+    max_simulation_seconds=180
 )
 
 # train_env = SimplestIntersection(
@@ -75,7 +145,7 @@ while True:
 #region Test the environment
 simulation.beginSimulation()
 
-test_env = SimplestIntersection(
+test_env = RealIntersectionSimpleObs12(
     simulation=simulation,
     max_simulation_seconds=900
 )
