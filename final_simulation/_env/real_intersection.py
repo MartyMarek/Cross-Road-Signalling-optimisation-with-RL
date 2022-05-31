@@ -1053,7 +1053,7 @@ class RealIntersectionSimpleObs12(gym.Env):
         observations = np.append(traffic.to_numpy(dtype=np.int64),np.array([throughput,current_signal_state,previous_signal_state,previous_signal_active_time],dtype=np.int64))
         
         # Calculate Reward
-        reward = calculate_reward_12(
+        reward = simple_reward_12(
             throughput=throughput,
             cars_waiting=traffic['stopped_cars'].sum(),
             current_signal_state=current_signal_state,

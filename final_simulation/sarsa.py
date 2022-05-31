@@ -1,122 +1,130 @@
 import numpy as np
-from final_simulation._env.real_intersection import RealIntersectionSimpleObs12
-from final_simulation._sumo.simplest_intersection_simulation import SignalStates, SumoSimulationSimpleObs
 import os
 import random
+import pandas as pd
 
 
-stopped_cars_bins = np.array([0,4,10,20,np.inf])
-throughput_bins = np.array([0,2,6,12,np.inf])
-signals_bins = np.arange(0,8)
-signal_timer_bins = np.array([0,5,15,25,np.inf])
+class SARSA():
 
-bins = [
-    # Stopped cars from each cardinal direction
-    stopped_cars_bins,
-    stopped_cars_bins,
-    stopped_cars_bins,
-    stopped_cars_bins,
-    # Throughput
-    throughput_bins,
-    # Current signal state
-    signals_bins,
-    # Previous signal state
-    signals_bins,
-    # Previous signal active time
-    signal_timer_bins
-]
+    def __init__(self,
+        n_episodes,
+        epsilon_initial,
+        epsilon_decay_episodes_percent,
+        alpha,
+        gamma,
+        discrete_observation_bins,
+        env,
+        log_dir
+    ):
 
-def discretise_observations(observations,bins):
+        self._n_episodes = n_episodes
+        self._current_episode = 0
+        self._epsilon_initial = epsilon_initial
+        self._epsilon = self._epsilon_initial
+        self._epsilon_decay_episodes_percent = epsilon_decay_episodes_percent
+        self._begin_epsilon_decay_episode = 1
+        self._final_epsilon_decay_episode = np.ceil(self._n_episodes * self._epsilon_decay_episodes_percent)
+        self._epsilon_decay_value = self._epsilon_initial / (self._final_epsilon_decay_episode - self._begin_epsilon_decay_episode)
+        self._alpha = alpha
+        self._gamma = gamma
+        self._discrete_observation_bins = discrete_observation_bins
+        self._env = env
+        self._log_dir = log_dir
+        self._q_table = np.random.uniform(low=-2, high=0, size=([len(obs_bin) for obs_bin in self._discrete_observation_bins] + [self._env.action_space.n]))
+        self._rewards = list()
+        self._episodes = list()
+        self._total_throughput = list()
 
-    discrete_observations = list()
+    def discretise_observation(self,observation):
 
-    for i in range(len(observations)):
-        discrete_observations.append(np.digitize(observations[i], bins[i]) - 1) # -1 will turn bin into index
-    return tuple(discrete_observations)
+        discrete_observation = list()
 
-def choose_action(Q,state,epsilon):
-    action=0
-    if np.random.uniform(0, 1) < epsilon:
-        action = env.action_space.sample()
-    else:
-        action = np.argmax(Q[state, :])
-    return action
+        for i in range(len(observation)):
+            discrete_observation.append(np.digitize(observation[i], self._discrete_observation_bins[i]) - 1) # -1 will turn bin into index
+        
+        return tuple(discrete_observation)
 
+    def choose_action(self,observation):
 
-# Sim time 1 minute
-max_simulation_seconds = 180
-number_episodes = 500
-
-# Define simulation
-simulation = SumoSimulationSimpleObs(
-    sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo",
-    #sumo_binary_path="C:\\Program Files (x86)\\Eclipse\\Sumo\\bin\\sumo-gui",
-    sumo_config_path="C:\\sumoconfig\\real_intersection.sumocfg",
-    signal_states=SignalStates
-)
-
-# Define environment
-env = RealIntersectionSimpleObs12(
-    simulation=simulation,
-    max_simulation_seconds=max_simulation_seconds
-)
-env.action_space
-# Initialize Q table randomly
-q_table = np.random.uniform(low=-2, high=0, size=([len(bin) for bin in bins] + [env.action_space.n]))
-
-obs1 = env.reset()
-
-n_episodes = 10
-alpha = 0.1
-gamma = 0.95
-
-for episode in range(n_episodes):
-
-    current_obs = env.reset()
-    if random.uniform(0,1) <= epsilon:
-        current_action = env.action_space.sample()
-    else:
-        current_action = np.argmax(q_table[current_obs,:])
-    total_rewards  = 0
-    done = False
-    print("Training episode:", episode)
-
-    while not done:
-
-        next_obs, reward, done, info = env.step(action=current_action)
-
-        if random.uniform(0,1) <= epsilon:
-            next_action = env.action_space.sample()
+        action=0
+        
+        if np.random.uniform(0, 1) < self._epsilon:
+            action = self._env.action_space.sample()
         else:
-            next_action = np.argmax(q_table[next_obs,:])
+            #action = np.argmax(self._q_table[observation, :])
+            action = np.argmax(self._q_table[observation])
 
-        q_table[current_obs, current_action] = q_table[current_obs, current_action] + alpha * (reward + gamma * q_table[next_obs, next_action] - q_table[current_obs, current_action])
-  
-        current_obs = next_obs
-        current_action = next_action
-          
-        #Updating the respective vaLues
-        t += 1
-        reward += 1
-          
-        #If at the end of learning process
-        if done:
-            env.render(mode='console')
+        return action
 
+    def decay_epsilon(self):
 
+        if self._final_epsilon_decay_episode >= self._current_episode and self._current_episode >= self._begin_epsilon_decay_episode:
+            self._epsilon -= self._epsilon_decay_value
 
+    def learn(self):
+        
+        self.save_monitor_full()
 
+        while self._current_episode < self._n_episodes:
+            
+            print("Episode: ", self._current_episode + 1)
 
+            total_reward = 0
+            done = False
+            current_obs = self.discretise_observation(observation=self._env.reset())
+            current_action = self.choose_action(observation=current_obs)
+            self.decay_epsilon()
+            print("Epsilon: ", self._epsilon)
 
-EPISODES = 50000
+            while done != True:
 
-# parameters for epsilon decay policy
-EPSILON = 1 # not a constant, going to be decayed
-START_EPSILON_DECAYING = 1
-END_EPSILON_DECAYING = EPISODES // 2
-epsilon_decay_value = EPSILON / (END_EPSILON_DECAYING - START_EPSILON_DECAYING)
+                raw_next_obs, reward, done, info = self._env.step(action=current_action)
+                next_obs = self.discretise_observation(observation=raw_next_obs)
+                next_action = self.choose_action(observation=next_obs)
 
-#for testing
-N_TEST_RUNS = 100
-TEST_INTERVAL = 5000
+                self._q_table[current_obs][current_action] = self._q_table[current_obs][current_action] + self._alpha * (reward + self._gamma * self._q_table[next_obs][next_action] - self._q_table[current_obs][current_action])
+
+                current_obs = next_obs
+                current_action = next_action
+                total_reward += reward
+
+            self._current_episode += 1
+            self._rewards.append(total_reward)
+            self._episodes.append(self._current_episode)
+            self._total_throughput.append(self._env._total_throughput)
+
+            self.save_monitor_incremental()
+
+        self.save_monitor_full()
+        self.save_q_table()
+
+    def save_monitor_incremental(self):
+
+        output_path = "{0}\\monitor.csv".format(self._log_dir)
+
+        data = dict(
+            episode = [self._episodes[-1]],
+            reward = [self._rewards[-1]],
+            total_throughput = [self._total_throughput[-1]]
+        )
+
+        incremental_monitor_df = pd.DataFrame(data=data)
+        incremental_monitor_df.to_csv(output_path, mode='a', header=not os.path.exists(output_path), index=False)
+
+    def save_monitor_full(self):
+
+        output_path = "{0}\\monitor.csv".format(self._log_dir)
+
+        data = dict(
+            episode = self._episodes,
+            reward = self._rewards,
+            total_throughput = self._total_throughput
+        )
+
+        complete_monitor_df = pd.DataFrame(data=data)
+        complete_monitor_df.to_csv(output_path, mode='w',index=False)
+
+    def save_q_table(self):
+
+        np.save("{0}\\final_q_table".format(self._log_dir),self._q_table)
 
