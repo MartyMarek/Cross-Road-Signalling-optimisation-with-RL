@@ -435,3 +435,42 @@ def simple_reward_12(throughput, cars_waiting, current_signal_state, previous_si
     reward = throughput_reward + signal_sequence_reward - cars_waiting_punishment - short_signal_punishment - long_signal_punishment
 
     return np.float(reward)
+
+
+def simple_reward_13(throughput, cars_waiting, current_signal_state, previous_signal_state,
+                        previous_signal_active_time, signal_states):
+
+    # Cars waiting punishment
+    cars_waiting_punishment = cars_waiting
+
+    # Short signal punishment
+    if current_signal_state != previous_signal_state and previous_signal_active_time < 5:
+        short_signal_punishment = 30
+    else:
+        short_signal_punishment = 0
+
+    # Long signal punishment
+    if current_signal_state == previous_signal_state and previous_signal_active_time > 25:
+        long_signal_punishment = 5
+    else:
+        long_signal_punishment = 0
+
+    # Correct sequence reward
+    if signal_states(previous_signal_state).name == 'rgrrrgrr' and signal_states(current_signal_state).name == 'ryrrryrr':
+        signal_sequence_reward = 2
+    elif signal_states(previous_signal_state).name == 'GrrrGrrr' and signal_states(current_signal_state).name == 'yrrryrrr':
+        signal_sequence_reward = 2
+    elif signal_states(previous_signal_state).name == 'rrrgrrrg' and signal_states(current_signal_state).name == 'rrryrrry':
+        signal_sequence_reward = 2
+    elif signal_states(previous_signal_state).name == 'rrGrrrGr' and signal_states(current_signal_state).name == 'rryrrryr':
+        signal_sequence_reward = 2
+    else:
+        signal_sequence_reward = 0
+
+    # Throughput reward
+    throughput_reward = throughput * 2
+    
+
+    reward = throughput_reward + signal_sequence_reward - cars_waiting_punishment - short_signal_punishment - long_signal_punishment
+
+    return np.float(reward)
