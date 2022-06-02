@@ -8,6 +8,7 @@ import traci
 from final_simulation._sumo.simplest_intersection_simulation import SignalStates, SumoSimulation
 from final_simulation._env.reward import *
 from final_simulation.datastore import *
+import os
 
 
 class RealIntersection7(gym.Env):
@@ -1171,7 +1172,13 @@ class RealIntersectionSimpleObs13(gym.Env):
 
         # used to store each state and save to a file
         self.datastore = DataStore()
+        self._records_steps = list()
+        self._records_rewards = list()
+        self._records_waiting_times = list()
+        self._records_cars_waiting = list()
+        self._records_signal_changes = list()
 
+        ## plot_df = df.groupby(['Model','Step'],as_index=False)['reward','throughput','cars_waiting'].mean()
 
     def reset(self):
         """
@@ -1197,6 +1204,12 @@ class RealIntersectionSimpleObs13(gym.Env):
         self._done = False
         self._history = None
 
+        # Data store
+        self._records_steps = list()
+        self._records_rewards = list()
+        self._records_waiting_times = list()
+        self._records_cars_waiting = list()
+        self._records_signal_changes = list()
 
         observations = np.zeros((8,),dtype=np.int64)
 
@@ -1238,8 +1251,10 @@ class RealIntersectionSimpleObs13(gym.Env):
 
         ## Update values
         # Update total signal changes
+        signal_change_marker = 0
         if self._simulation._signal_states(action).name != self._previous_signal:
             self._total_signal_changes += 1
+            signal_change_marker = 1
         self._previous_signal = self._simulation._signal_states(action).name
 
         # Update total throughput
@@ -1259,6 +1274,13 @@ class RealIntersectionSimpleObs13(gym.Env):
             self.datastore.saveCurrentRecord()
         else:
             done = False
+
+        # Update data store
+        self._records_steps.append(self._current_time_step - 1)
+        self._records_rewards.append(reward)
+        self._records_waiting_times.append(traffic_full['accumulated_waiting_time'].sum())
+        self._records_cars_waiting.append(traffic_full['stopped_cars'].sum())
+        self._records_signal_changes.append(signal_change_marker)
 
         return observations, reward, done, info
 
@@ -1291,4 +1313,23 @@ class RealIntersectionSimpleObs13(gym.Env):
     def close(self):
         # Close any existing session
         self._simulation.endSimulation()
+
+    def save_metrics(self,episode,model_name,log_dir):
+
+        os.makedirs(log_dir, exist_ok=True)
+        output_path = "{0}\\eval_metrics.csv".format(log_dir)
+        
+
+        data = dict(
+            steps = self._records_steps,
+            rewards = self._records_rewards,
+            waiting_times = self._records_waiting_times,
+            cars_waiting = self._records_cars_waiting,
+            signal_changes = self._records_signal_changes
+        )
+
+        complete_monitor_df = pd.DataFrame(data=data)
+        complete_monitor_df['episode'] = episode
+        complete_monitor_df['model_name'] = model_name
+        complete_monitor_df.to_csv(output_path, mode='a', header=not os.path.exists(output_path), index=False)
 

@@ -49,28 +49,39 @@ class SaveOnBestTrainingRewardCallback(BaseCallback):
         return True
 
 
-class RecordEnvironmentMetrics(BaseCallback):
-    """
-    Callback for saving a model (the check is done every ``check_freq`` steps)
-    based on the training reward (in practice, we recommend using ``EvalCallback``).
+# class RecordEnvironmentMetrics(BaseCallback):
+#     """
+#     Callback for saving a model (the check is done every ``check_freq`` steps)
+#     based on the training reward (in practice, we recommend using ``EvalCallback``).
 
-    :param check_freq:
-    :param log_dir: Path to the folder where the model will be saved.
-      It must contains the file created by the ``Monitor`` wrapper.
-    :param verbose: Verbosity level.
-    """
-    def __init__(self, check_freq: int, log_dir: str, verbose: int = 1):
-        super(RecordEnvironmentMetrics, self).__init__(verbose)
-        self.check_freq = check_freq
-        self.log_dir = log_dir
-        self.save_path = os.path.join(log_dir, 'best_model')
-        self.best_mean_reward = -np.inf
+#     :param check_freq:
+#     :param log_dir: Path to the folder where the model will be saved.
+#       It must contains the file created by the ``Monitor`` wrapper.
+#     :param verbose: Verbosity level.
+#     """
+#     def __init__(self, check_freq: int, log_dir: str, verbose: int = 1):
+#         super(RecordEnvironmentMetrics, self).__init__(verbose)
+#         self.check_freq = check_freq
+#         self.log_dir = log_dir
+#         self.save_path = os.path.join(log_dir, 'best_model')
+#         self.best_mean_reward = -np.inf
 
-    def _init_callback(self) -> None:
-        # Create folder if needed
-        if self.save_path is not None:
-            os.makedirs(self.save_path, exist_ok=True)
+#     def _init_callback(self) -> None:
+#         # Create folder if needed
+#         if self.save_path is not None:
+#             os.makedirs(self.save_path, exist_ok=True)
 
-    def _on_step(self) -> bool:
+#     def _on_step(self) -> bool:
       
-      
+#       output_path = "{0}\\full_monitor.csv".format(self.log_dir)
+
+#       self.env.
+#       data = dict(
+#           episode = [self.n_calls],
+#           reward = [self.],
+#           total_throughput = [self._total_throughput[-1]],
+#           epsilon = [self._epsilons[-1]]
+#       )
+
+#       incremental_monitor_df = pd.DataFrame(data=data)
+#       incremental_monitor_df.to_csv(output_path, mode='a', header=not os.path.exists(output_path), index=False)
