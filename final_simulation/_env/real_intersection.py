@@ -1,4 +1,3 @@
-from this import d
 import gym
 from gym.spaces import Discrete, Box, Dict
 import pandas as pd
@@ -1213,7 +1212,7 @@ class RealIntersectionSimpleObs13(gym.Env):
         self._current_time_step += 1
         self._current_simulation_time = self._simulation.getSimulationTime()
 
-        traffic,throughput,current_signal_state,previous_signal_state,previous_signal_active_time = self._simulation.getCurrentObservations()
+        traffic,throughput,current_signal_state,previous_signal_state,previous_signal_active_time,traffic_full = self._simulation.getCurrentObservations()
 
         observations = np.append(traffic.to_numpy(dtype=np.int64),np.array([throughput,current_signal_state,previous_signal_state,previous_signal_active_time],dtype=np.int64))
         
@@ -1229,7 +1228,7 @@ class RealIntersectionSimpleObs13(gym.Env):
 
         # Optionally we can pass additional info, we are not using that for now
         info = {
-            "traffic": traffic,
+            "traffic": traffic_full,
             "signal_state": current_signal_state,
             "previous_signal_state": previous_signal_state,
             "previous_signal_active_time": previous_signal_active_time,

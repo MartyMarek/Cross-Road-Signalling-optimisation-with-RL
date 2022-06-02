@@ -281,13 +281,38 @@ class SumoSimulationSimpleObs:
         - New Throughput
         '''
 
+        # # Create empty dictionary
+        # output_dict = dict()
+        # # Get number of vehicles approaching the intersection that are stopped
+        # output_dict['stopped_cars'] = x.loc[
+        #     (x['status'] == 'Approaching_Interection') & 
+        #     (x['stopped'] == True)
+        # ].index.nunique()
+        # # Get number of vehicles that are new throughput
+        # output_dict['new_throughput'] = x.loc[x['new_throughput'] == True].index.nunique()
+
+
         # Create empty dictionary
         output_dict = dict()
+        # Get number of vehicles approaching the intersection
+        output_dict['approaching_cars'] = x.loc[x['status'] == 'Approaching_Interection'].index.nunique()
         # Get number of vehicles approaching the intersection that are stopped
         output_dict['stopped_cars'] = x.loc[
             (x['status'] == 'Approaching_Interection') & 
             (x['stopped'] == True)
         ].index.nunique()
+        # Get the average speed for vehicles either approaching the intersection or in the intersection
+        output_dict['average_speed'] = x.loc[
+            ((x['status'] == 'Approaching_Interection') |
+            (x['status'] == 'In_Interection')) &
+            (x['first_frame'] == False),
+            'speed'
+        ].mean()
+        # Replace NaN average speeds with 0
+        if np.isnan(output_dict['average_speed']):
+            output_dict['average_speed'] = 0
+        # Get accumulated waiting time for vehicles approaching the intersection
+        output_dict['accumulated_waiting_time'] = x.loc[x['status'] == 'Approaching_Interection','accumulated_waiting_time'].sum()
         # Get number of vehicles that are new throughput
         output_dict['new_throughput'] = x.loc[x['new_throughput'] == True].index.nunique()
 
@@ -364,16 +389,33 @@ class SumoSimulationSimpleObs:
         # Group vehicles in vehicles state data frame by route and calculate desired observations
         traffic = self._vehicles_state.groupby('entry').apply(lambda x: self.collapseSimulationStateToObservations(x=x))
         # Create standard traffic observation space
-        traffic_standard = pd.DataFrame(
+        traffic_full = pd.DataFrame(
             columns=[
+                'approaching_cars',
                 'stopped_cars',
+                'average_speed',
+                'accumulated_waiting_time',
                 'new_throughput'
             ],
             index=self._entries
         ).fillna(0).sort_index()
-        traffic_standard.index.name = 'entry'
+        traffic_full.index.name = 'entry'
         # Update standard traffic observation space with actual values
-        traffic_standard.update(traffic)
+        traffic_full.update(traffic)
+        
+        
+        # # Create standard traffic observation space
+        # traffic_standard = pd.DataFrame(
+        #     columns=[
+        #         'stopped_cars',
+        #         'new_throughput'
+        #     ],
+        #     index=self._entries
+        # ).fillna(0).sort_index()
+        # traffic_standard.index.name = 'entry'
+        # # Update standard traffic observation space with actual values
+        # traffic_standard.update(traffic)
+        traffic_standard = traffic_full.drop(labels=['approaching_cars','average_speed','accumulated_waiting_time'],axis='columns')
         # Calculate throughput
         throughput = traffic_standard['new_throughput'].sum()
         # Drop throughput
@@ -394,7 +436,7 @@ class SumoSimulationSimpleObs:
         else:
             self._previous_signal_active_time = 1
             
-        return traffic_standard,throughput,current_signal_state,previous_signal_state,previous_signal_active_time
+        return traffic_standard,throughput,current_signal_state,previous_signal_state,previous_signal_active_time,traffic_full
 
     def getSignalState(self):
         return self._signal_states[traci.trafficlight.getRedYellowGreenState(tlsID='intersection')].value

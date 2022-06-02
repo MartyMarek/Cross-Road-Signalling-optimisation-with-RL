@@ -14,17 +14,19 @@ class SARSA():
         gamma,
         discrete_observation_bins,
         env,
-        log_dir
+        log_dir,
+        epsilon_final = 0
     ):
 
         self._n_episodes = n_episodes
         self._current_episode = 0
         self._epsilon_initial = epsilon_initial
+        self._epsilon_final = epsilon_final
         self._epsilon = self._epsilon_initial
         self._epsilon_decay_episodes_percent = epsilon_decay_episodes_percent
         self._begin_epsilon_decay_episode = 1
         self._final_epsilon_decay_episode = np.ceil(self._n_episodes * self._epsilon_decay_episodes_percent)
-        self._epsilon_decay_value = self._epsilon_initial / (self._final_epsilon_decay_episode - self._begin_epsilon_decay_episode)
+        self._epsilon_decay_value = (self._epsilon_initial - self._epsilon_final) / (self._final_epsilon_decay_episode - self._begin_epsilon_decay_episode)
         self._alpha = alpha
         self._gamma = gamma
         self._discrete_observation_bins = discrete_observation_bins
@@ -33,6 +35,7 @@ class SARSA():
         self._q_table = np.random.uniform(low=-2, high=0, size=([len(obs_bin) for obs_bin in self._discrete_observation_bins] + [self._env.action_space.n]))
         self._rewards = list()
         self._episodes = list()
+        self._epsilons = list()
         self._total_throughput = list()
 
     def discretise_observation(self,observation):
@@ -58,8 +61,10 @@ class SARSA():
 
     def decay_epsilon(self):
 
-        if self._final_epsilon_decay_episode >= self._current_episode and self._current_episode >= self._begin_epsilon_decay_episode:
+        if self._final_epsilon_decay_episode > self._current_episode and self._current_episode >= self._begin_epsilon_decay_episode:
             self._epsilon -= self._epsilon_decay_value
+        
+        self._epsilons.append(self._epsilon)
 
     def learn(self):
         
@@ -74,7 +79,7 @@ class SARSA():
             current_obs = self.discretise_observation(observation=self._env.reset())
             current_action = self.choose_action(observation=current_obs)
             self.decay_epsilon()
-            print("Epsilon: ", self._epsilon)
+            #print("Epsilon: ", self._epsilon)
 
             while done != True:
 
@@ -105,7 +110,8 @@ class SARSA():
         data = dict(
             episode = [self._episodes[-1]],
             reward = [self._rewards[-1]],
-            total_throughput = [self._total_throughput[-1]]
+            total_throughput = [self._total_throughput[-1]],
+            epsilon = [self._epsilons[-1]]
         )
 
         incremental_monitor_df = pd.DataFrame(data=data)
@@ -118,7 +124,8 @@ class SARSA():
         data = dict(
             episode = self._episodes,
             reward = self._rewards,
-            total_throughput = self._total_throughput
+            total_throughput = self._total_throughput,
+            epsilon = self._epsilons
         )
 
         complete_monitor_df = pd.DataFrame(data=data)
