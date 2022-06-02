@@ -2,6 +2,7 @@ import random
 import gym
 import numpy as np
 import pandas as pd
+import os
 
 from _env.qlearn_intersection import SimplestIntersection
 from _sumo.qlearn_simulation import SignalStates, SumoSimulation
@@ -35,16 +36,18 @@ test_episodes = 100
 max_steps = 100
 
 # create the Q-Table
-q_table = np.random.uniform(low=-2, high=0, size=([4,4,4,4,4,4,4,4,4,8,4] + [env.actions.n]))
+q_table = np.random.uniform(low=-2, high=0, size=([4,4,8,8,4] + [env.actions.n]))
 
 rewards = []
 epsilons = []
+throughputs = []
 
 
 for episode in range(train_episodes):
 
     currentState = env.reset()
     total_rewards  = 0
+    total_throughput = 0
 
     print("Training episode:", episode)
 
@@ -61,8 +64,9 @@ for episode in range(train_episodes):
             # explotation path - take the best step
             nextAction = np.argmax(q_table[currentState])
 
+
         # take the action and receive the reward
-        nextState, reward, done = env.step(nextAction)
+        nextState, reward, done, info = env.step(nextAction)
 
 
         # update Q table
@@ -71,6 +75,7 @@ for episode in range(train_episodes):
                                             q_table[currentState][nextAction])
 
         total_rewards += reward
+        total_throughput += info["throughput"]
         currentState = nextState
 
         # if the episode is finished
@@ -84,6 +89,7 @@ for episode in range(train_episodes):
     # keep a record of rewards and epsilons
     rewards.append(total_rewards)
     epsilons.append(epsilon)
+    throughputs.append(total_throughput)
 
     #print("Reward: {}, Next Epsilon: {}".format(total_rewards, epsilon))
 
@@ -92,10 +98,18 @@ for episode in range(train_episodes):
 epsilon = min_epsilon + (max_epsilon - min_epsilon) * np.exp(-decay * episode)
 rewards.append(total_rewards)
 epsilons.append(epsilon)
+throughputs.append(total_throughput)
 
 print("Average Score for this run: " + str(sum(rewards)/train_episodes))
 
-saveData = {'Rewards':rewards, 'Epsilon':epsilons}
+saveData = {'Rewards':rewards, 'Epsilon':epsilons, 'Throughput':throughputs}
 df = pd.DataFrame(saveData)
 
 df.to_csv("rewards-epsilons.csv")
+
+log_dir = "_models\\reward_13\\q-learn"
+os.makedirs(log_dir, exist_ok=True)
+
+#np.save("\\qlearn_tables\\", q_table)
+
+np.save("{0}\\final_q_table".format(log_dir), q_table)

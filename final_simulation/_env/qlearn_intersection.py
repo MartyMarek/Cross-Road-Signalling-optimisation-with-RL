@@ -6,7 +6,7 @@ import numpy as np
 from enum import Enum
 import random
 import traci
-from _sumo.simplest_intersection_simulation import SumoSimulation
+from _sumo.simplest_intersection_simulation import SignalStates, SumoSimulation
 from _env.reward import *
 from datastore import *
 
@@ -24,15 +24,11 @@ class SimplestIntersection(gym.Env):
         self._simulation = simulation
         self._max_simulation_seconds = max_simulation_seconds
 
+        # action space
         self.actions = Discrete(len(self._simulation._signal_states))
 
-        # action space
-        #action_array = np.array([8])
-        #self.action_space = Discrete
-
-        #self.observation_space = np.zeros((77,), dtype='int64')
-        #obs_array = np.array([77])
-        self.observation_space = 8388608  #(4,4,4,4,4,4,4,4,4,8,4)
+        # observation space
+        self.observation_space = 4096
 
         # Reset counters
         self._current_time_step = 1
@@ -72,7 +68,7 @@ class SimplestIntersection(gym.Env):
         self._done = False
         self._history = None
 
-        return (0,0,0,0,0,0,0,0,0,0,0)
+        return (0,0,0,0,0)
 
     def step(self, action):
 
@@ -86,9 +82,20 @@ class SimplestIntersection(gym.Env):
 
         observation = self._simulation.getCurrentObservations()
 
-        reward = qlearning_reward_04(observation)
 
-        throughput = observation[8]
+        cars_waiting = observation[0]
+        throughput = observation[1]
+        current_signal_state = observation[2]
+        previous_signal_state = observation[3]
+        previous_signal_active_time = observation[4]
+
+
+        reward = simple_reward_13(throughput, cars_waiting, current_signal_state,
+                                  previous_signal_state, previous_signal_active_time, SignalStates)
+
+        info = {
+            "throughput": throughput
+        }
 
         ## Update values
         # Update total signal changes
@@ -111,7 +118,7 @@ class SimplestIntersection(gym.Env):
         else:
             done = False
 
-        return observation, reward, done
+        return observation, reward, done, info
 
 
     def render(self, mode='console'):

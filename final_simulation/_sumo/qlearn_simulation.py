@@ -180,8 +180,8 @@ class SumoSimulation:
 
         # add lightState to observation
         observation.append(current_signal_state)
+        observation.append(previous_signal_state)
         observation.append(lightStatusTime)
-
 
         # add the newly arrived vehicles to the allvehicles list so next turn they are counted
         self.allVehicles.update(self.newVehicles)
@@ -216,6 +216,11 @@ class SumoSimulation:
         vertical = self.binVehicles(len(verticalList.index))
         verticalRight = self.binVehicles(len(verticalTurnRightList.index))
 
+        total = len(horizontalList.index) + len(horizontalTurnRightList.index) + \
+                len(verticalList.index) + len(verticalTurnRightList.index)
+
+        totalBinned = self.binTotalVehicles(total)
+
         # get the total wait time for all vehicles
         horizontalTotalTime = self.binAccumulatedWaitTime(horizontalList['accumulated_waiting_time'].sum())
         horizontalRightTotalTime = self.binAccumulatedWaitTime(horizontalTurnRightList['accumulated_waiting_time'].sum())
@@ -223,8 +228,7 @@ class SumoSimulation:
         verticalRightTotalTime = self.binAccumulatedWaitTime(verticalTurnRightList['accumulated_waiting_time'].sum())
 
         # create an array with the results
-        return [horizontal, horizontalRight, vertical, verticalRight, horizontalTotalTime,
-                         horizontalRightTotalTime, verticalTotalTime, verticalRightTotalTime]
+        return [totalBinned]
 
 
     def binLightStatusTime(self, statusTime):
@@ -257,3 +261,12 @@ class SumoSimulation:
         else:
             return 3
 
+    def binTotalVehicles(self, vehicles):
+        if vehicles < 10:
+            return 0
+        elif vehicles < 20:
+            return 1
+        elif vehicles < 30:
+            return 2
+        else:
+            return 3
