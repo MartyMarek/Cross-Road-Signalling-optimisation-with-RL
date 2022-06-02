@@ -191,7 +191,7 @@ class SumoSimulation:
         self.newVehicles.clear()
 
         # return the current observation
-        return observation
+        return tuple(observation)
 
 
     def getSignalState(self):
