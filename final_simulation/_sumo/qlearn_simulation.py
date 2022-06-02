@@ -58,7 +58,8 @@ class SumoSimulation:
         try:
             traci.close()
         except traci.exceptions.FatalTraCIError:
-            print("No simulation running.")
+            pass
+            #print("No simulation running.")
 
         self.vehiclesPast.clear()
         self.vehiclesPastHistory.clear()

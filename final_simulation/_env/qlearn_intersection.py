@@ -1,4 +1,3 @@
-from this import d
 import gym
 from gym.spaces import Discrete, Box, Dict
 import pandas as pd
@@ -9,6 +8,7 @@ import traci
 from _sumo.simplest_intersection_simulation import SignalStates, SumoSimulation
 from _env.reward import *
 from datastore import *
+import os
 
 
 class SimplestIntersection(gym.Env):
@@ -43,6 +43,12 @@ class SimplestIntersection(gym.Env):
 
         # used to store each state and save to a file
         self.datastore = DataStore()
+        self._records_steps = list()
+        self._records_rewards = list()
+        self._records_throughputs = list()
+        self._records_waiting_times = list()
+        self._records_cars_waiting = list()
+        self._records_signal_changes = list()
 
     def reset(self):
         """
@@ -68,6 +74,14 @@ class SimplestIntersection(gym.Env):
         self._done = False
         self._history = None
 
+        # Data store
+        self._records_steps = list()
+        self._records_rewards = list()
+        self._records_throughputs = list()
+        self._records_waiting_times = list()
+        self._records_cars_waiting = list()
+        self._records_signal_changes = list()
+
         return (0,0,0,0,0)
 
     def step(self, action):
@@ -88,6 +102,10 @@ class SimplestIntersection(gym.Env):
         current_signal_state = observation[2]
         previous_signal_state = observation[3]
         previous_signal_active_time = observation[4]
+
+        signal_change_marker = 0
+        if current_signal_state != previous_signal_state:
+            signal_change_marker = 1
 
 
         reward = simple_reward_13(throughput, cars_waiting, current_signal_state,
@@ -118,6 +136,14 @@ class SimplestIntersection(gym.Env):
         else:
             done = False
 
+        # Update data store
+        self._records_steps.append(self._current_time_step - 1)
+        self._records_rewards.append(reward)
+        self._records_throughputs.append(throughput)
+        self._records_waiting_times.append(0) # TODO Add the actual waiting times variable
+        self._records_cars_waiting.append(cars_waiting)
+        self._records_signal_changes.append(signal_change_marker)
+
         return observation, reward, done, info
 
 
@@ -128,5 +154,26 @@ class SimplestIntersection(gym.Env):
     def close(self):
         # Close any existing session
         self._simulation.endSimulation()
+
+    def save_metrics(self,episode,model_name,log_dir):
+
+        os.makedirs(log_dir, exist_ok=True)
+        output_path = "{0}\\eval_metrics.csv".format(log_dir)
+        
+
+        data = dict(
+            steps = self._records_steps,
+            reward = self._records_rewards,
+            throughput = self._records_throughputs,
+            waiting_time = self._records_waiting_times,
+            cars_waiting = self._records_cars_waiting,
+            signal_changes = self._records_signal_changes
+        )
+
+        complete_monitor_df = pd.DataFrame(data=data)
+        complete_monitor_df['episode'] = episode
+        complete_monitor_df['model_name'] = model_name
+        complete_monitor_df.to_csv(output_path, mode='a', header=not os.path.exists(output_path), index=False)
+
 
 

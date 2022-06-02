@@ -256,7 +256,8 @@ class SumoSimulationSimpleObs:
         try:
             traci.close()
         except traci.exceptions.FatalTraCIError:
-            print("No simulation running.")
+            pass
+            #print("No simulation running.")
 
     def getSimulationTime(self):
         return traci.simulation.getTime()
