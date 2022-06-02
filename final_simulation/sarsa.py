@@ -135,3 +135,50 @@ class SARSA():
 
         np.save("{0}\\final_q_table".format(self._log_dir),self._q_table)
 
+
+class SARSA_Eval():
+
+    def __init__(self,
+        q_table_path
+    ):
+        
+        # Define custom sized bins for observation space discretisation
+        stopped_cars_bins = np.array([0,4,10,20,np.inf])
+        throughput_bins = np.array([0,2,6,12,np.inf])
+        signals_bins = np.arange(0,8)
+        signal_timer_bins = np.array([0,5,15,25,np.inf])
+
+        bins = [
+            # Stopped cars from each cardinal direction
+            stopped_cars_bins,
+            stopped_cars_bins,
+            stopped_cars_bins,
+            stopped_cars_bins,
+            # Throughput
+            throughput_bins,
+            # Current signal state
+            signals_bins,
+            # Previous signal state
+            signals_bins,
+            # Previous signal active time
+            signal_timer_bins
+        ]
+
+        self._discrete_observation_bins = bins
+        self._q_table = np.load(q_table_path)
+
+    def discretise_observation(self,observation):
+
+        discrete_observation = list()
+
+        for i in range(len(observation)):
+            discrete_observation.append(np.digitize(observation[i], self._discrete_observation_bins[i]) - 1) # -1 will turn bin into index
+        
+        return tuple(discrete_observation)
+
+    def predict(self,observation):
+
+        action = np.argmax(self._q_table[self.discretise_observation(observation)])
+            
+        return action
+

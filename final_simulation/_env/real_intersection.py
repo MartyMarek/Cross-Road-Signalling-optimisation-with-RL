@@ -1174,6 +1174,7 @@ class RealIntersectionSimpleObs13(gym.Env):
         self.datastore = DataStore()
         self._records_steps = list()
         self._records_rewards = list()
+        self._records_throughputs = list()
         self._records_waiting_times = list()
         self._records_cars_waiting = list()
         self._records_signal_changes = list()
@@ -1207,6 +1208,7 @@ class RealIntersectionSimpleObs13(gym.Env):
         # Data store
         self._records_steps = list()
         self._records_rewards = list()
+        self._records_throughputs = list()
         self._records_waiting_times = list()
         self._records_cars_waiting = list()
         self._records_signal_changes = list()
@@ -1278,6 +1280,7 @@ class RealIntersectionSimpleObs13(gym.Env):
         # Update data store
         self._records_steps.append(self._current_time_step - 1)
         self._records_rewards.append(reward)
+        self._records_throughputs.append(throughput)
         self._records_waiting_times.append(traffic_full['accumulated_waiting_time'].sum())
         self._records_cars_waiting.append(traffic_full['stopped_cars'].sum())
         self._records_signal_changes.append(signal_change_marker)
@@ -1322,8 +1325,9 @@ class RealIntersectionSimpleObs13(gym.Env):
 
         data = dict(
             steps = self._records_steps,
-            rewards = self._records_rewards,
-            waiting_times = self._records_waiting_times,
+            reward = self._records_rewards,
+            throughput = self._records_throughputs,
+            waiting_time = self._records_waiting_times,
             cars_waiting = self._records_cars_waiting,
             signal_changes = self._records_signal_changes
         )
@@ -1332,4 +1336,215 @@ class RealIntersectionSimpleObs13(gym.Env):
         complete_monitor_df['episode'] = episode
         complete_monitor_df['model_name'] = model_name
         complete_monitor_df.to_csv(output_path, mode='a', header=not os.path.exists(output_path), index=False)
+
+class RealIntersectionSimpleObs13_Static(gym.Env):
+    """
+    Custom Environment that follows gym interface.
+    Implementing the simplest intersection. 
+    """
+    # Define metadata
+    metadata = {'render.modes': ['console','human']}
+
+    # Define constants for clearer code
+
+
+    def __init__(self,simulation: SumoSimulation,max_simulation_seconds):
+
+        super(RealIntersectionSimpleObs13_Static, self).__init__()
+
+        # SUMO Setup
+        self._simulation = simulation
+        self._max_simulation_seconds = max_simulation_seconds
+        
+        # Spaces
+        ## Define action space
+        '''
+        Discrete actions corresponding to each possible traffic light state for the intersection
+        '''
+
+        # action space
+        self.action_space = Discrete(len(self._simulation._signal_states))
+
+        # observation space
+        self.observation_space = Box(low=0, high=1000, shape=(8,),dtype=np.int64)
+        
+        # Reset counters
+        self._current_time_step = 1
+        self._current_simulation_time = 0
+        self._previous_signal = None
+        self._total_signal_changes = 0
+        self._total_throughput = 0
+        self._total_wait_time = 0
+        self._total_reward = 0
+        self._done = False
+        self._history = None
+
+        # used to store each state and save to a file
+        self.datastore = DataStore()
+        self._records_steps = list()
+        self._records_rewards = list()
+        self._records_throughputs = list()
+        self._records_waiting_times = list()
+        self._records_cars_waiting = list()
+        self._records_signal_changes = list()
+
+        ## plot_df = df.groupby(['Model','Step'],as_index=False)['reward','throughput','cars_waiting'].mean()
+
+    def reset(self):
+        """
+        Reset the simulation to the beginning. Must return the first observation.
+        """
+
+        # Reset SUMO
+        ## Close any existing session
+        self._simulation.endSimulation()
+        
+        ## Start new session
+        self._simulation.beginSimulation()
+        self._simulation.stepSimulation()
+
+        # Reset counters
+        self._current_time_step = 1
+        self._current_simulation_time = self._simulation.getSimulationTime()
+        self._previous_signal = None
+        self._total_signal_changes = 0
+        self._total_throughput = 0
+        self._total_wait_time = 0
+        self._total_reward = 0
+        self._done = False
+        self._history = None
+
+        # Data store
+        self._records_steps = list()
+        self._records_rewards = list()
+        self._records_throughputs = list()
+        self._records_waiting_times = list()
+        self._records_cars_waiting = list()
+        self._records_signal_changes = list()
+
+        observations = np.zeros((8,),dtype=np.int64)
+
+        return observations
+
+    def step(self, action):
+        
+        # Step SUMO
+        #self._simulation.changeSignalState(action=action) # Getting an error
+        self._simulation.stepSimulation()
+
+        # Increment the time step
+        self._current_time_step += 1
+        self._current_simulation_time = self._simulation.getSimulationTime()
+
+        traffic,throughput,current_signal_state,previous_signal_state,previous_signal_active_time,traffic_full = self._simulation.getCurrentObservations()
+        action = current_signal_state
+
+        observations = np.append(traffic.to_numpy(dtype=np.int64),np.array([throughput,current_signal_state,previous_signal_state,previous_signal_active_time],dtype=np.int64))
+        
+        # Calculate Reward
+        reward = simple_reward_13(
+            throughput=throughput,
+            cars_waiting=traffic['stopped_cars'].sum(),
+            current_signal_state=current_signal_state,
+            previous_signal_state=previous_signal_state,
+            previous_signal_active_time=previous_signal_active_time,
+            signal_states=SignalStates
+        )
+
+        # Optionally we can pass additional info, we are not using that for now
+        info = {
+            "traffic": traffic_full,
+            "signal_state": current_signal_state,
+            "previous_signal_state": previous_signal_state,
+            "previous_signal_active_time": previous_signal_active_time,
+            "simulation_time":self._current_simulation_time,
+            "reward": reward
+        }
+
+        ## Update values
+        # Update total signal changes
+        signal_change_marker = 0
+        if self._simulation._signal_states(action).name != self._previous_signal:
+            self._total_signal_changes += 1
+            signal_change_marker = 1
+        self._previous_signal = self._simulation._signal_states(action).name
+
+        # Update total throughput
+        self._total_throughput += throughput
+        # Update total wait time
+        #self._total_wait_time += traffic['accumulated_waiting_time'].sum()
+        # Update total reward
+        self._total_reward += reward
+
+        ## Check if simulation is finished
+        # End after the maximum simulation time steps
+        if self._current_simulation_time >= self._max_simulation_seconds:
+            done = True
+            self._simulation.endSimulation()
+
+            # save observations to a file (This will also reset the datastore)
+            self.datastore.saveCurrentRecord()
+        else:
+            done = False
+
+        # Update data store
+        self._records_steps.append(self._current_time_step - 1)
+        self._records_rewards.append(reward)
+        self._records_throughputs.append(throughput)
+        self._records_waiting_times.append(traffic_full['accumulated_waiting_time'].sum())
+        self._records_cars_waiting.append(traffic_full['stopped_cars'].sum())
+        self._records_signal_changes.append(signal_change_marker)
+
+        return observations, reward, done, info
+
+
+    def render(self, mode='console'):
+
+        if mode == 'console':
+            print(
+            '''
+            Total Time Steps: {0}
+            Total Signal Changes: {1}
+            Total Throughput: {2}
+            Total Reward: {3}
+            '''.format(
+                self._current_time_step,
+                self._total_signal_changes,
+                self._total_throughput,
+                self._total_reward
+            )
+            )
+            
+        else:
+            raise NotImplementedError()
+        # agent is represented as a cross, rest as a dot
+        #print("Position: ",self.agent_pos)
+        #print("." * self.agent_pos, end="")
+        #print("x", end="")
+        #print("." * (self.grid_size - self.agent_pos))
+
+    def close(self):
+        # Close any existing session
+        self._simulation.endSimulation()
+
+    def save_metrics(self,episode,model_name,log_dir):
+
+        os.makedirs(log_dir, exist_ok=True)
+        output_path = "{0}\\eval_metrics.csv".format(log_dir)
+        
+
+        data = dict(
+            steps = self._records_steps,
+            reward = self._records_rewards,
+            throughput = self._records_throughputs,
+            waiting_time = self._records_waiting_times,
+            cars_waiting = self._records_cars_waiting,
+            signal_changes = self._records_signal_changes
+        )
+
+        complete_monitor_df = pd.DataFrame(data=data)
+        complete_monitor_df['episode'] = episode
+        complete_monitor_df['model_name'] = model_name
+        complete_monitor_df.to_csv(output_path, mode='a', header=not os.path.exists(output_path), index=False)
+
 
