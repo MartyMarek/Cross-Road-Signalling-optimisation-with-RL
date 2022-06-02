@@ -28,11 +28,11 @@ class SimplestIntersection(gym.Env):
 
         # action space
         #action_array = np.array([8])
-        self.action_space = 8
+        #self.action_space = Discrete
 
         #self.observation_space = np.zeros((77,), dtype='int64')
         #obs_array = np.array([77])
-        self.observation_space = 2100000
+        self.observation_space = 8388608  #(4,4,4,4,4,4,4,4,4,8,4)
 
         # Reset counters
         self._current_time_step = 1
@@ -72,7 +72,7 @@ class SimplestIntersection(gym.Env):
         self._done = False
         self._history = None
 
-        return 0
+        return (0,0,0,0,0,0,0,0,0,0,0)
 
     def step(self, action):
 
