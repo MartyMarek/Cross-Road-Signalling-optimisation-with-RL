@@ -24,3 +24,19 @@ pip install gym
 followed by 
 
 pip install stable-baselines3
+
+# 3. Setup of simulation files
+
+The SUMO simulatiom configuration files located in the github folder at final_simulation_sumo_files, need to be copied to the local desktop into the C:\sumoconfig\ directory. Without these files the simulation will not be able to run.
+
+# 4. Training models
+
+To execute a training run, select the python notebook file corresponding to the model you want to run, as follows:
+
+* Q-Learning : model_training_qlearn.ipynb
+* Sarsa : model_training_qlearn.ipynb
+* A2C : model_training_a2c.ipynb
+* DQN : model_training_dqn.ipynb
+* PPO : model_training_ppo.ipynb
+
+The hyperparameters can be turned in each of these files by providing the desired value to the listed variables in the notebook.
