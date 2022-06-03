@@ -31,7 +31,7 @@ The SUMO simulatiom configuration files located in the github folder at final_si
 
 # 4. Training models
 
-To execute a training run, select the python notebook file corresponding to the model you want to run, as follows:
+To execute a training run, select the python notebook file corresponding to the model you want to run. Please note these have already been run and have saved the results. 
 
 * Q-Learning : model_training_qlearn.ipynb
 * Sarsa : model_training_qlearn.ipynb
@@ -40,3 +40,12 @@ To execute a training run, select the python notebook file corresponding to the 
 * PPO : model_training_ppo.ipynb
 
 The hyperparameters can be turned in each of these files by providing the desired value to the listed variables in the notebook.
+
+For evaluation of each model (using the best of each model we have created using the training above), you can simply run the following notebook:
+
+* model_evaluation.ipynb
+
+To generate plots to compare each model's metrics, run the following notebook:
+
+* model_evaluation_plots.ipynb
+
